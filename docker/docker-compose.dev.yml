@@ -1,0 +1,42 @@
+# =============================================================================
+# DEVELOPMENT database — a separate, disposable Postgres for local coding.
+#
+# Unlike prod, THIS exposes a host port (5433) so Prisma Studio and your
+# local `pnpm dev` can reach it. There is no app service here — dev runs the
+# app natively via `pnpm dev` on port 3001.
+#
+#   pnpm dev:db:up      start it
+#   pnpm dev:db:down    stop it
+#   pnpm dev:db:reset   nuke the volume and recreate (zero risk to prod)
+#
+# The password below is intentionally a fixed weak value (devpassword): it
+# holds only throwaway data, is bound to localhost, and never leaves the
+# machine. Do NOT reuse it for prod.
+#
+# Runs under its own compose project (`coop-dev`) with its own network, fully
+# isolated from the production stack (`coop-prod`).
+# =============================================================================
+
+name: coop-dev
+
+services:
+  dev-db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: coop
+      POSTGRES_PASSWORD: devpassword
+      POSTGRES_DB: coop_dev
+    volumes:
+      - coop_dev_db_data:/var/lib/postgresql/data
+    ports:
+      - '127.0.0.1:5433:5432' # dev db exposed on host port 5433
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U coop' ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+volumes:
+  coop_dev_db_data:
+    name: coop_dev_db_data

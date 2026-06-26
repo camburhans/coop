@@ -7,7 +7,14 @@
     "build": "next build",
     "start": "next start",
     "lint": "eslint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "dev:db:up": "docker compose -f docker/docker-compose.dev.yml up -d",
+    "dev:db:down": "docker compose -f docker/docker-compose.dev.yml down",
+    "dev:db:reset": "docker compose -f docker/docker-compose.dev.yml down -v && docker compose -f docker/docker-compose.dev.yml up -d",
+    "prod:up": "docker compose -f docker/docker-compose.yml up -d",
+    "prod:down": "docker compose -f docker/docker-compose.yml down",
+    "prod:logs": "docker compose -f docker/docker-compose.yml logs -f",
+    "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build"
   },
   "dependencies": {
     "next": "16.2.9",

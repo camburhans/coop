@@ -39,7 +39,7 @@ This sprint is mostly infrastructure and schema. Most sessions are short but ord
 - [ ] Mockup HTML saved somewhere referenceable (not in repo — design reference only)
 - [ ] Mac mini set up and on the local network — this is the one machine where you both develop and run production
 - [ ] Tailscale account created (free tier is fine for one user)
-- [ ] Node 20+ installed on the Mac mini
+- [ ] Node 22+ installed on the Mac mini (pnpm 11 requires Node >= 22.13)
 - [ ] Docker Desktop installed on the Mac mini (set to start at login)
 - [ ] GitHub account with a private repo created (empty) for C.O.O.P.
 - [ ] An AI API key obtained but **not yet used** (Gemini Flash recommended per architecture §5; sits unused until Sprint 4)
@@ -367,7 +367,7 @@ Write a brief README with:
 - A short "Two environments on one machine" note: dev = `pnpm dev` on
   3001 against dev Postgres (5433); prod = Docker on 3000. They never
   share a database.
-- Prerequisites (Node 20+, Docker, pnpm)
+- Prerequisites (Node 22+, Docker, pnpm)
 - Quick start: copy .env.example to .env, fill in, pnpm install, start
   the dev database (Session #2), pnpm dev
 - A note that Docker setup arrives in Session #2

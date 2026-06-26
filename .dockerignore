@@ -1,0 +1,17 @@
+node_modules
+.next
+.git
+.gitignore
+npm-debug.log*
+.pnpm-debug.log*
+
+# env files — never bake secrets into the image
+.env
+.env.*
+docker/.env
+
+# local/editor artifacts
+.DS_Store
+*.tsbuildinfo
+coverage
+README.md

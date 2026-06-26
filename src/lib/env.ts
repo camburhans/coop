@@ -17,6 +17,12 @@ const envSchema = z.object({
   SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
   // Optional in Sprint 1 — not used until Sprint 4 (AI layer).
   AI_API_KEY: z.string().optional(),
+  // Consumed ONLY by the PROD docker-compose file (docker/.env) to build the
+  // prod DATABASE_URL (postgresql://coop:${DB_PASSWORD}@db:5432/coop). The app
+  // itself reads DATABASE_URL, not DB_PASSWORD, so this is optional here: dev
+  // uses a fixed connection string and never sets DB_PASSWORD. When it IS set
+  // (prod), it must be at least 16 characters.
+  DB_PASSWORD: z.string().min(16, 'DB_PASSWORD must be at least 16 characters').optional(),
   NODE_ENV: z.enum(['development', 'production', 'test']),
 });
 

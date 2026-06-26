@@ -41,6 +41,7 @@ inclusion: always
 
 ## Versions
 
-- Node 20+
+- Node 22+ (required — pnpm 11 needs Node >= 22.13; the Docker images use
+  node:22-alpine)
 - pnpm preferred (npm acceptable)
 - Postgres 16 with pgvector extension

@@ -1,0 +1,59 @@
+# =============================================================================
+# PRODUCTION stack — the always-on app you open every morning.
+#
+# Reads secrets from docker/.env (gitignored). Run from the repo root with:
+#   pnpm prod:up   (docker compose -f docker/docker-compose.yml up -d)
+#
+# The prod db has NO host port mapping: only the app, on the internal docker
+# network, can reach it (by the hostname `db`). This is a safety boundary —
+# nothing on the host can accidentally point dev tooling at the prod database.
+#
+# This stack runs under its own compose project (`coop-prod`) with its own
+# network, fully isolated from the dev database stack (`coop-dev`). That
+# isolation enforces the hard rule: dev must never touch prod data.
+# =============================================================================
+
+name: coop-prod
+
+services:
+  db:
+    image: pgvector/pgvector:pg16
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: coop
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+      POSTGRES_DB: coop
+    volumes:
+      - coop_db_data:/var/lib/postgresql/data
+    # NO host port mapping — prod db is internal-network only.
+    # The app reaches it by hostname `db`. This is a security and
+    # safety boundary: nothing on the host can accidentally connect
+    # dev tooling to the prod database.
+    healthcheck:
+      test: [ 'CMD-SHELL', 'pg_isready -U coop' ]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  app:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://coop:${DB_PASSWORD}@db:5432/coop
+      APP_PASSCODE: ${APP_PASSCODE}
+      SESSION_SECRET: ${SESSION_SECRET}
+      AI_API_KEY: ${AI_API_KEY:-}
+      NODE_ENV: production
+    ports:
+      - '127.0.0.1:3000:3000'
+        # prod app on 3000, localhost-bound;
+        # Tailscale provides phone access
+
+volumes:
+  coop_db_data:
+    name: coop_db_data

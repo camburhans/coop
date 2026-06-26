@@ -20,7 +20,7 @@ disposable; prod data is real.
 
 ## Prerequisites
 
-- Node 20+
+- Node 22+ (pnpm 11 requires Node >= 22.13)
 - Docker (Docker Desktop on the Mac mini)
 - pnpm
 
@@ -42,3 +42,31 @@ pnpm dev
 
 > Docker setup (prod stack + dev database) arrives in **Session #2**. Until then,
 > `pnpm dev` runs the app but has no database to connect to.
+
+## Database images & scripts
+
+Both databases use the `pgvector/pgvector:pg16` image, which ships the pgvector
+extension binaries (Postgres 16). The image only makes the extension *available*
+— the `CREATE EXTENSION vector` statement is not run here. That is created via a
+**Prisma migration in Session #3**, and the migration runs against **both**
+databases (dev and prod), so each gets the extension enabled on first migrate.
+
+Convenience scripts (run from the repo root):
+
+```bash
+# Development database (disposable Postgres on host port 5433)
+pnpm dev:db:up       # start the dev db
+pnpm dev:db:down     # stop the dev db
+pnpm dev:db:reset    # drop the volume and recreate (zero risk to prod data)
+
+# Production stack (app on 127.0.0.1:3000 + internal-only db)
+pnpm prod:up         # start detached
+pnpm prod:down       # stop
+pnpm prod:logs       # follow logs
+pnpm prod:rebuild    # rebuild the app image and restart
+```
+
+The prod stack reads secrets from `docker/.env` (gitignored). It must define
+`DB_PASSWORD` (16+ chars), `APP_PASSCODE`, `SESSION_SECRET`, and optionally
+`AI_API_KEY`. The prod database has **no host port** — only the app, on the
+internal docker network, can reach it.
