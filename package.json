@@ -14,9 +14,12 @@
     "prod:up": "docker compose -f docker/docker-compose.yml up -d",
     "prod:down": "docker compose -f docker/docker-compose.yml down",
     "prod:logs": "docker compose -f docker/docker-compose.yml logs -f",
-    "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build"
+    "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build",
+    "db:snapshot": "bash scripts/db-snapshot.sh",
+    "db:smoke": "tsx scripts/db-smoke.ts"
   },
   "dependencies": {
+    "@prisma/client": "^6.19.3",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -31,7 +34,9 @@
     "eslint-config-next": "16.2.9",
     "prettier": "^3.8.4",
     "prettier-plugin-tailwindcss": "^0.8.0",
+    "prisma": "^6.19.3",
     "tailwindcss": "^4",
+    "tsx": "^4.22.4",
     "typescript": "^5"
   }
 }

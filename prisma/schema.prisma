@@ -1,0 +1,215 @@
+// C.O.O.P. — Unified Data Model (Sprint 1)
+//
+// Implements every entity from Architecture section 4 ("The Unified Data
+// Model"). Tables are PascalCase singular (per conventions); columns are
+// snake_case via @map for SQL ergonomics. All ids are UUIDs and all
+// timestamps are timestamptz.
+
+generator client {
+  provider        = "prisma-client-js"
+  previewFeatures = ["postgresqlExtensions"]
+}
+
+datasource db {
+  provider   = "postgresql"
+  url        = env("DATABASE_URL")
+  extensions = [vector]
+}
+
+// ---------------------------------------------------------------------------
+// Enums
+// ---------------------------------------------------------------------------
+
+enum ProjectStatus {
+  ACTIVE
+  PAUSED
+  DONE
+  ARCHIVED
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum TaskStatus {
+  TODO
+  IN_PROGRESS
+  DONE
+  BLOCKED
+}
+
+enum Energy {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+enum AccountType {
+  CASH
+  CHECKING
+  SAVINGS
+  INVESTMENT
+  CREDIT
+  LOAN
+  ASSET
+}
+
+enum TransactionSource {
+  MANUAL
+  CSV_IMPORT
+}
+
+enum NoteSource {
+  NATIVE
+  APPLE_NOTES_IMPORT
+}
+
+enum ReminderPriority {
+  LOW
+  MEDIUM
+  HIGH
+}
+
+// ---------------------------------------------------------------------------
+// Productivity
+// ---------------------------------------------------------------------------
+
+model Project {
+  id          String        @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  description String?
+  status      ProjectStatus
+  priority    Priority
+  dueDate     DateTime?     @map("due_date") @db.Date
+  createdAt   DateTime      @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime      @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  tasks Task[]
+}
+
+model Task {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  projectId String?    @map("project_id") @db.Uuid
+  title     String
+  status    TaskStatus
+  priority  Priority
+  energy    Energy
+  dueDate   DateTime?  @map("due_date") @db.Date
+  notes     String?
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  project Project? @relation(fields: [projectId], references: [id], onDelete: SetNull)
+
+  @@index([projectId])
+}
+
+// ---------------------------------------------------------------------------
+// Finance
+// ---------------------------------------------------------------------------
+
+model Account {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  name        String
+  type        AccountType
+  balance     Decimal     @db.Decimal(14, 2)
+  isLiability Boolean     @default(false) @map("is_liability")
+  createdAt   DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime    @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  transactions Transaction[]
+}
+
+model Transaction {
+  id          String            @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  accountId   String            @map("account_id") @db.Uuid
+  amount      Decimal           @db.Decimal(14, 2)
+  category    String
+  description String
+  occurredOn  DateTime          @map("occurred_on") @db.Date
+  source      TransactionSource
+  createdAt   DateTime          @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime          @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  account Account @relation(fields: [accountId], references: [id], onDelete: Cascade)
+
+  @@index([accountId])
+}
+
+// ---------------------------------------------------------------------------
+// Knowledge
+// ---------------------------------------------------------------------------
+
+model Note {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  body      String
+  source    NoteSource
+  createdAt DateTime   @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime   @updatedAt @map("updated_at") @db.Timestamptz(6)
+}
+
+model CalendarEvent {
+  id        String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title     String
+  startsAt  DateTime  @map("starts_at") @db.Timestamptz(6)
+  endsAt    DateTime? @map("ends_at") @db.Timestamptz(6)
+  allDay    Boolean   @default(false) @map("all_day")
+  location  String?
+  createdAt DateTime  @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+}
+
+model Reminder {
+  id          String           @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  title       String
+  dueAt       DateTime?        @map("due_at") @db.Timestamptz(6)
+  completedAt DateTime?        @map("completed_at") @db.Timestamptz(6)
+  priority    ReminderPriority
+  createdAt   DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt   DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+}
+
+model Verse {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  reference String
+  text      String
+  isCurrent Boolean  @default(false) @map("is_current")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+}
+
+// ---------------------------------------------------------------------------
+// Cross-domain linking (the connective tissue)
+// ---------------------------------------------------------------------------
+
+model Link {
+  id        String   @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  fromType  String   @map("from_type")
+  fromId    String   @map("from_id") @db.Uuid
+  toType    String   @map("to_type")
+  toId      String   @map("to_id") @db.Uuid
+  relation  String?
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([fromType, fromId])
+  @@index([toType, toId])
+}
+
+// ---------------------------------------------------------------------------
+// AI memory (pgvector)
+// ---------------------------------------------------------------------------
+
+model Embedding {
+  id         String                      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  sourceType String                      @map("source_type")
+  sourceId   String                      @map("source_id") @db.Uuid
+  content    String
+  vector     Unsupported("vector(1536)")
+  createdAt  DateTime                    @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  @@index([sourceType, sourceId])
+}
