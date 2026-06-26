@@ -2,8 +2,8 @@
 
 **Cognitive Operations & Optimization Platform**
 
-*Version 1.2 — Architecture Specification*
-*Status: Foundation locked, visual direction locked, single-host dev+prod model, pre-Sprint 1*
+_Version 1.2 — Architecture Specification_
+_Status: Foundation locked, visual direction locked, single-host dev+prod model, pre-Sprint 1_
 
 ---
 
@@ -13,7 +13,7 @@ C.O.O.P. is a private, single-user life operating system: a centralized data eng
 
 It is explicitly **not** a portfolio site, a productivity-app clone, a finance-app clone, or a second-brain clone. It is a unified life-data layer with an intelligent interface wrapped around it.
 
-**North Star:** *Show me what I need to do, show me how the different areas of my life are looking, and keep me organized.*
+**North Star:** _Show me what I need to do, show me how the different areas of my life are looking, and keep me organized._
 
 **Primary user:** One person (the owner). Architected cleanly enough to evolve into a product later, but V1 makes no multi-tenant compromises.
 
@@ -37,21 +37,21 @@ These principles govern every downstream decision. When a tradeoff is unclear, d
 
 The stack is intentionally consolidated. A solo developer working a couple hours most nights, with AI assistance, moves fastest with one application, one deploy, and minimal moving parts.
 
-| Layer | Choice | Rationale |
-|---|---|---|
-| Frontend framework | Next.js + React | Single full-stack framework; server and client in one codebase. |
-| Styling | Tailwind CSS | Fast, consistent, pairs well with a glass/dark design system. |
-| Motion | Framer Motion | Declarative animation; easy to disable globally for principle #2. |
-| Backend | Next.js API routes | One backend, one deploy. No separate FastAPI service in V1. |
-| Database | PostgreSQL (Docker) | Relational integrity for the unified model; JSON columns where flexibility is needed. |
-| ORM | Prisma | Type-safe schema, painless migrations — critical for an evolving data model. |
-| State | Zustand | Lightweight client state without Redux overhead. |
-| AI | Cheap external API behind a provider-agnostic interface | Sidesteps the 16GB local-LLM ceiling; far better reasoning than a local 7–8B model. |
-| Embeddings | External embedding endpoint (same interface) | Cheap, fast, good enough for semantic search. |
-| Visuals | CSS glassmorphism + one restrained particle canvas | The Jarvis feel at ~5% of the cost of WebGL. No Three.js in V1. |
-| Containerization | Docker Compose | Reproducible local deploy on the Mac mini. |
-| Remote access | Tailscale | Secure phone access without exposing anything to the public internet. |
-| App auth | Single passcode/password | Network is private via Tailscale; this protects an unlocked device. |
+| Layer              | Choice                                                  | Rationale                                                                             |
+| ------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
+| Frontend framework | Next.js + React                                         | Single full-stack framework; server and client in one codebase.                       |
+| Styling            | Tailwind CSS                                            | Fast, consistent, pairs well with a glass/dark design system.                         |
+| Motion             | Framer Motion                                           | Declarative animation; easy to disable globally for principle #2.                     |
+| Backend            | Next.js API routes                                      | One backend, one deploy. No separate FastAPI service in V1.                           |
+| Database           | PostgreSQL (Docker)                                     | Relational integrity for the unified model; JSON columns where flexibility is needed. |
+| ORM                | Prisma                                                  | Type-safe schema, painless migrations — critical for an evolving data model.          |
+| State              | Zustand                                                 | Lightweight client state without Redux overhead.                                      |
+| AI                 | Cheap external API behind a provider-agnostic interface | Sidesteps the 16GB local-LLM ceiling; far better reasoning than a local 7–8B model.   |
+| Embeddings         | External embedding endpoint (same interface)            | Cheap, fast, good enough for semantic search.                                         |
+| Visuals            | CSS glassmorphism + one restrained particle canvas      | The Jarvis feel at ~5% of the cost of WebGL. No Three.js in V1.                       |
+| Containerization   | Docker Compose                                          | Reproducible local deploy on the Mac mini.                                            |
+| Remote access      | Tailscale                                               | Secure phone access without exposing anything to the public internet.                 |
+| App auth           | Single passcode/password                                | Network is private via Tailscale; this protects an unlocked device.                   |
 
 ### Explicitly deferred (not in V1)
 
@@ -165,7 +165,7 @@ This is the most important and riskiest part of the architecture. Getting the en
 | is_current | boolean | the one shown on the dashboard |
 | created_at / updated_at | timestamptz | |
 
-*Self-contained and minimal by design — the owner's own memorization method will extend this later.*
+_Self-contained and minimal by design — the owner's own memorization method will extend this later._
 
 ### Cross-domain linking
 
@@ -243,23 +243,23 @@ The Mac mini is simultaneously the **development machine** and the **production 
 
 ### Two environments, one machine
 
-Dev and prod run the *same code* — the separation is achieved by distinct ports, distinct databases, and distinct env files, not distinct images or repos.
+Dev and prod run the _same code_ — the separation is achieved by distinct ports, distinct databases, and distinct env files, not distinct images or repos.
 
-| | Production | Development |
-|---|---|---|
-| Purpose | The always-on app you open every morning | Where you build and experiment |
-| App | Dockerized, `restart: unless-stopped`, port **3000** | Native `pnpm dev`, port **3001** |
-| Database | Postgres in Docker, **internal network only** (no host port) | Postgres in Docker, host port **5433** (for Prisma Studio/tooling) |
-| DB volume | `coop_db_data` | `coop_dev_db_data` |
-| Env file | `docker/.env` (never committed) | `.env` (never committed) |
-| Data | Real life data — protected | Fake/throwaway — disposable |
-| Lifecycle | Runs detached, always | Started only while actively coding, then stopped |
+|           | Production                                                   | Development                                                        |
+| --------- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
+| Purpose   | The always-on app you open every morning                     | Where you build and experiment                                     |
+| App       | Dockerized, `restart: unless-stopped`, port **3000**         | Native `pnpm dev`, port **3001**                                   |
+| Database  | Postgres in Docker, **internal network only** (no host port) | Postgres in Docker, host port **5433** (for Prisma Studio/tooling) |
+| DB volume | `coop_db_data`                                               | `coop_dev_db_data`                                                 |
+| Env file  | `docker/.env` (never committed)                              | `.env` (never committed)                                           |
+| Data      | Real life data — protected                                   | Fake/throwaway — disposable                                        |
+| Lifecycle | Runs detached, always                                        | Started only while actively coding, then stopped                   |
 
 **Why two databases is the whole point:** developing against the production database means every schema experiment, test script, or stray `deleteMany()` is played with live ammunition. A separate dev database makes destructive experimentation free. The resource cost is near-zero — an idle Postgres is ~50–150MB RAM and a few MB of disk for fake data; the Postgres image itself is shared, not duplicated.
 
 ### Resource note (16GB ceiling)
 
-Because dev and prod share 16GB of unified memory, the prod stack is kept lean (app + one Postgres, both idle-light). The second, dev Postgres adds only a mostly-idle process. Real memory pressure comes from the dev server + editor + browser during active coding — none of which are duplicated. Avoid running heavy dev *builds* while relying on prod; otherwise the two coexist comfortably.
+Because dev and prod share 16GB of unified memory, the prod stack is kept lean (app + one Postgres, both idle-light). The second, dev Postgres adds only a mostly-idle process. Real memory pressure comes from the dev server + editor + browser during active coding — none of which are duplicated. Avoid running heavy dev _builds_ while relying on prod; otherwise the two coexist comfortably.
 
 ### The promotion boundary
 
@@ -317,7 +317,7 @@ Additionally, an on-demand `pnpm db:snapshot` is run before any migration in eit
 
 ## 9. The Dashboard (Morning Screen)
 
-The dashboard *is* the product. Everything else is data feeding it. It answers the North Star at a single glance.
+The dashboard _is_ the product. Everything else is data feeding it. It answers the North Star at a single glance.
 
 ### Layout skeleton (the command-center frame)
 
@@ -359,15 +359,18 @@ These tokens are the visual contract for Sprint 2 onward. Implement them as Tail
 | `hi` | `#ff7a8a` | High priority / alert |
 
 **Typography**
+
 - **Sora** (200–600 weights) — UI and display. Large figures use ultra-light (200) for the cinematic feel.
 - **Spline Sans Mono** (300–500) — all metadata, labels, timestamps, tags, status readouts. The monospace is what sells the "instrument" character; use it consistently for system text.
 
 **Surfaces & effects**
+
 - Panels: ~20px radius, `backdrop-filter: blur(18px)`, layered gradient fill, a 1px gradient border (blue→violet via mask technique), deep drop shadow + subtle inset highlight.
-- Accent glows are *low-opacity halos* (box-shadow), never solid neon.
+- Accent glows are _low-opacity halos_ (box-shadow), never solid neon.
 - Status/priority encoded by accent color: `good`/`blue`/`warn`/`hi`.
 
 **Motion (all global-toggle-able, per principle #2)**
+
 - Ambient drifting gradient background (~28s loop).
 - Low-density particle field (~26 particles rising slowly).
 - Faint grid texture with radial mask.
@@ -375,10 +378,11 @@ These tokens are the visual contract for Sprint 2 onward. Implement them as Tail
 - "Breathing" pulse on live indicators (status dot, current-event node).
 
 **Responsive behavior**
+
 - ≤1080px: finance panel goes full-width; others drop to 2-up.
 - ≤760px: left rail hidden, replaced by a fixed glass **bottom nav**; panels stack to single column; command bar remains accessible.
 
-**Implementation note:** the mockup is a throwaway reference — its hardcoded data and inline CSS are not reused. Sprint 2 rebuilds these as real Next.js/React components styled with Tailwind, consuming live data. We mine the mockup for the *visual language above*, not its code.
+**Implementation note:** the mockup is a throwaway reference — its hardcoded data and inline CSS are not reused. Sprint 2 rebuilds these as real Next.js/React components styled with Tailwind, consuming live data. We mine the mockup for the _visual language above_, not its code.
 
 ---
 
@@ -409,4 +413,4 @@ Recorded so the vision isn't lost while V1 stays tight: Level 3 proactive AI; ri
 
 ---
 
-*End of architecture specification. This is a living document — version it in the repo and revise as sprints reveal reality.*
+_End of architecture specification. This is a living document — version it in the repo and revise as sprints reveal reality._

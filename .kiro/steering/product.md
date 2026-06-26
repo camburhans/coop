@@ -12,6 +12,7 @@ access via Tailscale.
 of my life are looking, and keep me organized.
 
 ## Core principles (do not violate)
+
 1. Foundation first — data layer, services, AI layer, THEN cinematic UI.
 2. Functional without animation — UI must work with all motion disabled.
 3. Calm on the hundredth view — daily-use tool, not a showpiece.
@@ -23,6 +24,7 @@ of my life are looking, and keep me organized.
    sit behind clean interfaces.
 
 ## V1 sprint plan
+
 - Sprint 1 (current): Foundation — repo, Docker, Postgres+pgvector,
   full Prisma schema, auth, Tailscale, backups.
 - Sprint 2: Productivity + dashboard shell.

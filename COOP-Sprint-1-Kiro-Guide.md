@@ -1,4 +1,5 @@
 # C.O.O.P. — Kiro Implementation Guide: Sprint 1
+
 ## Foundation: Repo, Containers, Database, Schema, Auth, Remote Access, Backups
 
 ---
@@ -10,6 +11,7 @@ Sprint 1 builds the entire foundation C.O.O.P. will stand on for years. No featu
 If Sprint 1 is done well, every later sprint becomes additive. If it's done sloppily, every later sprint pays a tax.
 
 **What you're building:**
+
 - A Next.js 15 (App Router) + TypeScript repo, linted and formatted
 - A **two-environment setup on a single machine** (the Mac mini is both dev and prod): production app + production Postgres in Docker, plus a separate development Postgres — so dev work never touches real data
 - A Docker Compose stack: prod app + prod Postgres (with `pgvector`) + a dev Postgres + nightly backup job
@@ -20,6 +22,7 @@ If Sprint 1 is done well, every later sprint becomes additive. If it's done slop
 - A `/health` route and a minimal authenticated landing page proving the whole stack is alive end-to-end
 
 **What this sprint does NOT include:**
+
 - The dashboard UI (Sprint 2)
 - Any productivity/finance/AI features (Sprints 2–4)
 - Visual polish, particles, glass styling (Sprint 5)
@@ -43,7 +46,7 @@ This sprint is mostly infrastructure and schema. Most sessions are short but ord
 - [ ] iCloud Drive enabled on the Mac mini (production backups land here)
 - [ ] A strong passcode chosen for the app (stored in a password manager, not your head)
 
-> **Single-host reminder:** You develop and serve production on the same Mac mini. The entire point of the two-environment setup below is that your dev work runs against a *separate, disposable* database (port 5433) while production runs untouched (port 3000, internal-only DB). Different ports, different databases, different env files — same machine.
+> **Single-host reminder:** You develop and serve production on the same Mac mini. The entire point of the two-environment setup below is that your dev work runs against a _separate, disposable_ database (port 5433) while production runs untouched (port 3000, internal-only DB). Different ports, different databases, different env files — same machine.
 
 > **Storage note:** Keep Docker (images + volumes) on the Mac mini's **internal SSD** for now. C.O.O.P.'s own footprint is small (~5–10GB initially), but Docker's image/build-cache churn grows over time — run `docker system prune` every few weeks to keep your ~80–90GB of free space healthy. The 2TB external media drive is **ExFAT** and must **not** hold the database volume — ExFAT lacks the locking/permissions Postgres needs and risks corruption. If disk pressure ever appears, the fix is a dedicated **APFS** drive left permanently attached, with Docker Desktop's disk image relocated to it (a settings change, no code impact) — deferred until `docker system df` shows real strain.
 
@@ -70,6 +73,7 @@ access via Tailscale.
 of my life are looking, and keep me organized.
 
 ## Core principles (do not violate)
+
 1. Foundation first — data layer, services, AI layer, THEN cinematic UI.
 2. Functional without animation — UI must work with all motion disabled.
 3. Calm on the hundredth view — daily-use tool, not a showpiece.
@@ -81,6 +85,7 @@ of my life are looking, and keep me organized.
    sit behind clean interfaces.
 
 ## V1 sprint plan
+
 - Sprint 1 (current): Foundation — repo, Docker, Postgres+pgvector,
   full Prisma schema, auth, Tailscale, backups.
 - Sprint 2: Productivity + dashboard shell.
@@ -99,6 +104,7 @@ inclusion: always
 # Technology Stack
 
 ## Locked choices (do not propose alternatives)
+
 - Framework: Next.js 15 (App Router) + TypeScript (strict mode)
 - Styling: Tailwind CSS
 - Motion: Framer Motion (Sprint 5+, not Sprint 1)
@@ -113,6 +119,7 @@ inclusion: always
 - Auth (V1): single passcode → httpOnly cookie session
 
 ## Explicitly out of V1
+
 - FastAPI / separate backend
 - Three.js / R3F / WebGL
 - Local LLMs (Ollama)
@@ -120,6 +127,7 @@ inclusion: always
 - Native iOS
 
 ## Environments (single host: the Mac mini is dev AND prod)
+
 - Production: dockerized app on port 3000, Postgres on the internal
   docker network (no host port), volume coop_db_data, env file docker/.env.
   Always running (restart: unless-stopped).
@@ -131,6 +139,7 @@ inclusion: always
   rebuilds prod container and runs `prisma migrate deploy` against prod DB.
 
 ## Versions
+
 - Node 20+
 - pnpm preferred (npm acceptable)
 - Postgres 16 with pgvector extension
@@ -146,39 +155,39 @@ inclusion: always
 # Repo Structure
 
 coop/
-├── .kiro/steering/      # this directory
+├── .kiro/steering/ # this directory
 ├── docker/
-│   ├── docker-compose.yml       # PRODUCTION stack (app + prod db + backup)
-│   ├── docker-compose.dev.yml   # DEV database only (separate Postgres)
-│   ├── Dockerfile.app
-│   ├── .env.production.example  # template for docker/.env (prod, gitignored)
-│   └── backup/
-│       ├── Dockerfile
-│       └── backup.sh
+│ ├── docker-compose.yml # PRODUCTION stack (app + prod db + backup)
+│ ├── docker-compose.dev.yml # DEV database only (separate Postgres)
+│ ├── Dockerfile.app
+│ ├── .env.production.example # template for docker/.env (prod, gitignored)
+│ └── backup/
+│ ├── Dockerfile
+│ └── backup.sh
 ├── prisma/
-│   ├── schema.prisma    # full unified data model (Sprint 1)
-│   └── migrations/
+│ ├── schema.prisma # full unified data model (Sprint 1)
+│ └── migrations/
 ├── scripts/
-│   ├── deploy.sh                # promote prod on this host
-│   ├── db-snapshot.sh           # on-demand dump before migrations
-│   └── install-backup-job.sh    # launchd nightly prod backup
+│ ├── deploy.sh # promote prod on this host
+│ ├── db-snapshot.sh # on-demand dump before migrations
+│ └── install-backup-job.sh # launchd nightly prod backup
 ├── src/
-│   ├── app/             # Next.js App Router
-│   │   ├── (auth)/      # unauthenticated routes (unlock page)
-│   │   ├── (app)/       # authenticated routes (dashboard + modules)
-│   │   ├── api/
-│   │   │   ├── health/
-│   │   │   └── auth/
-│   │   └── layout.tsx
-│   ├── lib/
-│   │   ├── auth/        # session + passcode logic
-│   │   ├── db/          # Prisma client singleton
-│   │   ├── ai/          # provider-agnostic interface (stub in Sprint 1)
-│   │   └── env.ts       # validated env loader
-│   ├── types/           # shared types
-│   └── middleware.ts    # route protection
-├── .env                 # DEV env (gitignored) — points at dev DB on 5433
-├── .env.example         # template documenting dev env shape
+│ ├── app/ # Next.js App Router
+│ │ ├── (auth)/ # unauthenticated routes (unlock page)
+│ │ ├── (app)/ # authenticated routes (dashboard + modules)
+│ │ ├── api/
+│ │ │ ├── health/
+│ │ │ └── auth/
+│ │ └── layout.tsx
+│ ├── lib/
+│ │ ├── auth/ # session + passcode logic
+│ │ ├── db/ # Prisma client singleton
+│ │ ├── ai/ # provider-agnostic interface (stub in Sprint 1)
+│ │ └── env.ts # validated env loader
+│ ├── types/ # shared types
+│ └── middleware.ts # route protection
+├── .env # DEV env (gitignored) — points at dev DB on 5433
+├── .env.example # template documenting dev env shape
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
@@ -187,6 +196,7 @@ coop/
 └── README.md
 
 ## Environment conventions
+
 - DEV: `.env` → DATABASE_URL points at localhost:5433 (dev Postgres),
   app runs natively via `pnpm dev` on port 3001
 - PROD: `docker/.env` → DATABASE_URL points at the db service on the
@@ -194,7 +204,7 @@ coop/
 - The two env files must NEVER point at the same database
 - All env vars validated via lib/env.ts using zod
 - Prisma client imported only via lib/db/client.ts (singleton)
-- No secrets in repo — both .env files gitignored, *.example documents shape
+- No secrets in repo — both .env files gitignored, \*.example documents shape
 - Server-only logic uses 'server-only' import to prevent client leakage
 - Route groups: (auth) bypasses middleware, (app) is protected
 ```
@@ -209,27 +219,32 @@ inclusion: always
 # Code Conventions
 
 ## TypeScript
+
 - strict: true in tsconfig (noImplicitAny, strictNullChecks, etc.)
 - No `any`. No `as unknown as X` escape hatches.
 - Prefer types from Prisma client over hand-rolled duplicates.
 
 ## Naming
+
 - Files: kebab-case (auth-session.ts, not authSession.ts)
 - React components: PascalCase exports from kebab-case files
 - DB tables (Prisma model): PascalCase singular (Project, not projects)
 - DB columns: snake_case via @map where needed for SQL ergonomics
 
 ## Imports
+
 - Absolute imports via `@/*` alias (configured in tsconfig)
 - Group: external, then @/lib, then @/components, then relative
 - No deep imports across feature boundaries
 
 ## Server vs client
+
 - Server Components by default
 - "use client" only where needed (interactivity, hooks, browser APIs)
 - Server-only modules: `import 'server-only'` at top
 
 ## Commits
+
 - Conventional commits: feat:, fix:, chore:, docs:, refactor:
 - One logical change per commit
 - Reference sprint in message: "feat(sprint-1): ..."
@@ -382,6 +397,7 @@ Do NOT install AI SDKs yet.
 - [ ] No secrets committed
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): repo bootstrap, env validation, structure scaffold"
@@ -552,6 +568,7 @@ Do NOT create any database tables manually.
 - [ ] `pnpm dev:db:reset` cleanly nukes and recreates the dev DB (try it — it's your safety habit)
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): docker — prod stack + separate dev database"
@@ -746,6 +763,7 @@ Do NOT modify env.ts beyond what's already there.
 **Sanity check the Link table by hand.** This polymorphic pattern is the riskiest piece of the whole model. Before committing, write one query yourself in psql (against the dev DB on 5433) that finds "all entities linked to project X regardless of type" — confirm it works the way you expect. If it feels awkward, this is the moment to revisit.
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): full unified data model — Prisma schema + pgvector"
@@ -877,6 +895,7 @@ Do NOT add user accounts — there is one user, ever.
 - [ ] Removing the cookie and visiting `/` redirects to `/unlock`
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): passcode auth + session middleware + health route"
@@ -1010,6 +1029,7 @@ security-sensitive (passcode entry, env file creation, tailnet hygiene).
 - [ ] `/api/health` returns `db: true` from the phone
 
 Commit (docs + script only — no secrets):
+
 ```bash
 git add docs/ scripts/deploy.sh docker/.env.production.example
 git commit -m "feat(sprint-1): prod bring-up script + tailscale + operating model docs"
@@ -1149,6 +1169,7 @@ Show:
 - [ ] Confirm Git push of the repo to private GitHub succeeded
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): automated nightly backups + restore docs"
@@ -1160,7 +1181,7 @@ git commit -m "feat(sprint-1): automated nightly backups + restore docs"
 
 ### What You're Building
 
-Per architecture §5 (and principle #7), the AI layer sits behind a provider-agnostic interface from day one. Sprint 1 creates the *interface and stub* only — no real API calls. Sprint 4 wires in Gemini Flash (or whatever provider) behind it.
+Per architecture §5 (and principle #7), the AI layer sits behind a provider-agnostic interface from day one. Sprint 1 creates the _interface and stub_ only — no real API calls. Sprint 4 wires in Gemini Flash (or whatever provider) behind it.
 
 This session is small but important: it's a structural commitment now so Sprint 4 has no "where does this live" debate.
 
@@ -1237,6 +1258,7 @@ Do NOT implement real embedding or completion logic.
 - [ ] A test call throws the "not configured" error rather than crashing silently
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "feat(sprint-1): ai provider interface (stub) — wired in sprint 4"
@@ -1311,6 +1333,7 @@ Do NOT introduce any feature code.
 - [ ] You can unlock the app from your phone in under 10 seconds
 
 Commit:
+
 ```bash
 git add -A
 git commit -m "chore(sprint-1): end-to-end smoke test + baseline captured"
@@ -1344,17 +1367,17 @@ git push origin main --tags
 
 ## Session Summary
 
-| Session | Focus | Approx Time |
-|---------|-------|-------------|
-| #1 | Repo bootstrap (Next.js, TS, lint, env, dev on 3001) | 30–45 min |
-| #2 | Docker — prod stack + separate dev database | 40–55 min |
-| #3 | **Prisma schema — full unified data model** | 60–90 min |
-| #4 | Passcode auth + session middleware | 45–60 min |
-| #5 | Prod bring-up (same host) + Tailscale (manual-heavy) | 45–60 min |
-| #6 | Automated backups + **restore drill** | 45–60 min |
-| #7 | AI provider interface stub | 15–20 min |
-| #8 | E2E smoke test + baseline | 30–45 min |
-| **Total** | | **~5.5–7.5 hours** |
+| Session   | Focus                                                | Approx Time        |
+| --------- | ---------------------------------------------------- | ------------------ |
+| #1        | Repo bootstrap (Next.js, TS, lint, env, dev on 3001) | 30–45 min          |
+| #2        | Docker — prod stack + separate dev database          | 40–55 min          |
+| #3        | **Prisma schema — full unified data model**          | 60–90 min          |
+| #4        | Passcode auth + session middleware                   | 45–60 min          |
+| #5        | Prod bring-up (same host) + Tailscale (manual-heavy) | 45–60 min          |
+| #6        | Automated backups + **restore drill**                | 45–60 min          |
+| #7        | AI provider interface stub                           | 15–20 min          |
+| #8        | E2E smoke test + baseline                            | 30–45 min          |
+| **Total** |                                                      | **~5.5–7.5 hours** |
 
 The session most worth slowing down on is **#3 (schema)** — it's the load-bearing decision of the whole system and every later sprint reads from it. The session most worth not skipping is **#6 (backups + restore drill)** — a backup you've never restored from is not a backup, and Sprint 2 will start filling the database with data you actually care about.
 
@@ -1363,6 +1386,7 @@ The session most worth slowing down on is **#3 (schema)** — it's the load-bear
 ## Heading Into Sprint 2
 
 When `sprint-1-complete` is tagged and the baseline is green, Sprint 2 picks up by:
+
 - Building the dashboard shell with the locked design system (architecture §9)
 - Implementing the Productivity module (Projects + Tasks) end-to-end
 - Wiring the first real panels (greeting, today's calendar placeholder, priorities, verse — finance and AI panels render as static placeholders until Sprints 3 and 4)
