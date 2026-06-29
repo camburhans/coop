@@ -6,3 +6,4 @@ allowBuilds:
   prisma: true
   '@prisma/client': true
   esbuild: true
+  bcrypt: true

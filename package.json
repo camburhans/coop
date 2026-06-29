@@ -20,6 +20,8 @@
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
+    "bcrypt": "^6.0.0",
+    "jose": "^6.2.3",
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
@@ -27,6 +29,7 @@
   },
   "devDependencies": {
     "@tailwindcss/postcss": "^4",
+    "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
