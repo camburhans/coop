@@ -87,6 +87,40 @@ services:
     command: [ 'npx', 'prisma', 'migrate', 'deploy' ]
     restart: 'no'
 
+  # ---------------------------------------------------------------------------
+  # backup — one-shot nightly pg_dump of the PROD db (Architecture §8, layer 1).
+  #
+  # Built from docker/backup (postgres:16-alpine, for a version-matched
+  # pg_dump). It runs INSIDE the docker network so it can reach the
+  # internal-only `db` (the prod db has no host port), dumps coop → gzip, writes
+  # to /backups, and prunes old files, then exits.
+  #
+  # Gated behind the `backup` profile so a normal `prod:up` never starts it —
+  # we do NOT want a long-lived container. It is invoked explicitly:
+  #
+  #   docker compose -f docker/docker-compose.yml --profile backup run --rm backup
+  #
+  # In production this invocation is driven nightly by the host's launchd job
+  # (scripts/install-backup-job.sh). deploy.sh also runs it as a pre-migration
+  # safety snapshot.
+  #
+  # ${BACKUP_DIR} (from docker/.env) is the host folder that receives the dumps;
+  # on the Mac mini point it at an iCloud Drive folder so backups sync offsite.
+  # ---------------------------------------------------------------------------
+  backup:
+    build:
+      context: ./backup
+      dockerfile: Dockerfile
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DB_PASSWORD: ${DB_PASSWORD}
+      TZ: America/New_York # operator's timezone — used for dump filename timestamps
+    volumes:
+      - ${BACKUP_DIR}:/backups
+    profiles: [ 'backup' ]
+
 volumes:
   coop_db_data:
     name: coop_db_data
