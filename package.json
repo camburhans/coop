@@ -15,6 +15,7 @@
     "prod:down": "docker compose -f docker/docker-compose.yml down",
     "prod:logs": "docker compose -f docker/docker-compose.yml logs -f",
     "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build",
+    "prod:migrate": "docker compose -f docker/docker-compose.yml --profile migrate run --rm migrate",
     "db:snapshot": "bash scripts/db-snapshot.sh",
     "db:smoke": "tsx scripts/db-smoke.ts"
   },

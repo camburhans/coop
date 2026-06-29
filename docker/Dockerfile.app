@@ -37,8 +37,23 @@ RUN corepack enable && corepack prepare pnpm@11.9.0 --activate
 COPY --from=deps /app/node_modules ./node_modules
 COPY . .
 
+# Generate the Prisma client BEFORE building. The deps stage installs packages
+# without the schema present, so Prisma's install-time generate can't run there
+# — without this step `@prisma/client` exports no model/enum types and the
+# `next build` type-check fails (e.g. "no exported member 'ProjectStatus'").
+RUN pnpm exec prisma generate
+
 # Disable Next.js telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
+
+# Build-time-only placeholder env. `next build` imports every route to collect
+# page data, and src/lib/env.ts validates env at import (and passcode.ts hashes
+# APP_PASSCODE), so the build fails without these present. They are throwaway
+# values that satisfy validation ONLY during the build — the runner stage does
+# NOT inherit them, and real secrets are injected at runtime from docker/.env.
+ENV DATABASE_URL="postgresql://build:build@localhost:5432/build"
+ENV APP_PASSCODE="build-time-placeholder"
+ENV SESSION_SECRET="build-time-placeholder-session-secret-min-32-chars"
 
 RUN pnpm build
 

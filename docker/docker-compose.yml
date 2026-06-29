@@ -51,8 +51,41 @@ services:
       NODE_ENV: production
     ports:
       - '127.0.0.1:3000:3000'
-        # prod app on 3000, localhost-bound;
-        # Tailscale provides phone access
+        # prod app on 3000, localhost-bound. Phone access is via
+        # `tailscale serve --bg 3000`, which proxies the tailnet to this
+        # loopback port (keeps prod tailnet-only + adds HTTPS).
+
+  # ---------------------------------------------------------------------------
+  # migrate — one-shot service that applies Prisma migrations to the PROD db.
+  #
+  # The runtime `app` image is a minimal Next.js standalone build: it carries
+  # NO prisma schema, migrations, or CLI, so it cannot run `prisma migrate`.
+  # This service is built from the Dockerfile's `builder` stage instead, which
+  # has the full dependency tree, the source, and prisma/ (schema + migrations).
+  #
+  # It runs INSIDE the docker network so it can reach the internal-only `db`
+  # (the prod db has no host port). It is gated behind the `migrate` profile so
+  # a normal `prod:up` never starts it; invoke it explicitly:
+  #
+  #   pnpm prod:migrate
+  #   # docker compose -f docker/docker-compose.yml --profile migrate \
+  #   #   run --rm migrate
+  #
+  # deploy.sh runs this between building the image and restarting services.
+  # ---------------------------------------------------------------------------
+  migrate:
+    build:
+      context: ..
+      dockerfile: docker/Dockerfile.app
+      target: builder
+    profiles: [ 'migrate' ]
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://coop:${DB_PASSWORD}@db:5432/coop
+    command: [ 'npx', 'prisma', 'migrate', 'deploy' ]
+    restart: 'no'
 
 volumes:
   coop_db_data:

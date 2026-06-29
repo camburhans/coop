@@ -30,11 +30,14 @@ yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files — both real env files must be gitignored, but keep the example template
+# env files — both real env files must be gitignored, but keep the example templates
 .env
 .env.*
 !.env.example
 docker/.env
+# the .env.* rule above also matches docker/.env.production.example — re-include
+# the committable prod template (it carries no real secrets)
+!docker/.env.production.example
 
 # backups & snapshots
 /backups

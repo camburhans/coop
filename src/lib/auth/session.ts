@@ -30,14 +30,20 @@ export const SESSION_MAX_AGE = 60 * 60 * 24 * 30;
  *
  * - httpOnly: not readable from JS, mitigating XSS token theft.
  * - sameSite 'lax': sent on top-level navigations, blocks most CSRF.
- * - secure in production: only sent over HTTPS (dev over http stays usable).
+ * - secure false: the app is reached over plain HTTP — locally on port 3000
+ *   and from the phone over Tailscale (http://<mac-mini>:3000). A `Secure`
+ *   cookie is refused by browsers over HTTP, which would break the unlock
+ *   flow entirely (login loop). This is an accepted single-user tradeoff: the
+ *   Tailscale tailnet already encrypts all transport end to end (WireGuard),
+ *   so confidentiality does not depend on the cookie's Secure flag. Revisit if
+ *   HTTPS is ever fronted via Tailscale Serve.
  * - path '/': valid across the whole app.
  * - maxAge: matches the token expiry so the cookie and token expire together.
  */
 export const SESSION_COOKIE_OPTIONS = {
   httpOnly: true,
   sameSite: 'lax',
-  secure: env.NODE_ENV === 'production',
+  secure: false,
   path: '/',
   maxAge: SESSION_MAX_AGE,
 } as const;
