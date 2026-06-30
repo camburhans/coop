@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>C.O.O.P. — Command Center</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..600&amp;family=Spline+Sans+Mono:wght@300..500&amp;family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&amp;display=swap" rel="stylesheet">
+<link rel="stylesheet" href="coop.css">
+</head>
+<body>
+
+<!-- ambient atmosphere -->
+<div class="ambient" aria-hidden="true">
+  <div class="glow glow-a"></div>
+  <div class="glow glow-b"></div>
+  <div class="glow glow-c"></div>
+  <div class="gridtex"></div>
+  <div class="vignette"></div>
+</div>
+<div id="particles" aria-hidden="true"></div>
+
+<!-- ============ LEFT STATUS RAIL ============ -->
+<aside class="rail" data-screen-label="Status rail">
+  <div class="sigil-wrap">
+    <div class="sigil">C</div>
+    <div class="sigil-ring"></div>
+  </div>
+  <div class="rail-id">C.O.O.P.</div>
+
+  <nav class="rail-nav" aria-label="Modules">
+    <button class="nav-btn active" data-view="dashboard" aria-label="Dashboard">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>
+      <span class="nav-lbl">DASH</span>
+    </button>
+    <button class="nav-btn" data-view="productivity" aria-label="Productivity">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="8.5 12.2 11 14.7 15.5 9.5"></polyline></svg>
+      <span class="nav-lbl">FOCUS</span>
+    </button>
+    <button class="nav-btn" data-view="finance" aria-label="Finance">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 17.5 9 11.5 13 14.5 20.5 6.5"></polyline><polyline points="15.5 6.5 20.5 6.5 20.5 11.5"></polyline></svg>
+      <span class="nav-lbl">FINANCE</span>
+    </button>
+    <button class="nav-btn" data-view="knowledge" aria-label="Knowledge">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 A 2 2 0 0 1 6 3.5 H 20 V 18.5 H 6 A 2 2 0 0 0 4 20.5 Z"></path><line x1="4" y1="20.5" x2="4" y2="5.5"></line><line x1="20" y1="18.5" x2="20" y2="20.5"></line></svg>
+      <span class="nav-lbl">KNOW</span>
+    </button>
+    <button class="nav-btn" data-view="ai" aria-label="A.I. Core">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2.5" x2="12" y2="6.5"></line><line x1="12" y1="17.5" x2="12" y2="21.5"></line><line x1="2.5" y1="12" x2="6.5" y2="12"></line><line x1="17.5" y1="12" x2="21.5" y2="12"></line></svg>
+      <span class="nav-lbl">A.I.</span>
+    </button>
+  </nav>
+
+  <div class="rail-sys">
+    <div class="presence"><i></i><b>READY</b></div>
+    <div class="rail-clock" id="railClock">07:42</div>
+  </div>
+</aside>
+
+<!-- ============ TOP COMMAND BAR — the soul of the interface ============ -->
+<header class="cmdbar" data-screen-label="Command bar">
+  <div class="cmd-inner">
+    <div class="cmd-top">
+      <h1 id="greeting">Good morning, Cameron. <span class="voice-soft">Three things need your attention today.</span></h1>
+      <div class="cmd-status">
+        <span id="barContext">Monday, June 15</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span id="barWeather"><b>72°</b> Sunny</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span id="barDate">22:54 LOCAL</span>
+        <span class="sep" aria-hidden="true">·</span>
+        <span class="online"><i></i> C.O.O.P. READY</span>
+      </div>
+    </div>
+    <div class="cmd-field">
+      <span class="cmd-spark" aria-hidden="true">✦</span>
+      <input id="cmdInput" type="text" placeholder="Speak to C.O.O.P. — say &ldquo;catch me up&rdquo; for your morning briefing…" autocomplete="off" spellcheck="false">
+      <span class="kbd" aria-hidden="true">⌘K</span>
+    </div>
+    <div class="cmd-prompts">
+      <button class="qprompt" data-q="catch me up"><b>✦</b> Catch me up</button>
+      <button class="qprompt" data-q="finances">How are my finances?</button>
+      <button class="qprompt" data-q="attention">What needs my attention?</button>
+      <button class="qprompt" data-q="today">What's on today?</button>
+    </div>
+  </div>
+</header>
+
+<!-- ============ MAIN ============ -->
+<main class="main">
+
+  <section class="grid" id="view-dashboard" data-screen-label="Dashboard">
+
+    <!-- PILLAR 1 · FINANCE — stewardship (hero) -->
+    <article class="panel p-finance" style="--d: 0.05s" data-screen-label="Financial Overview">
+      <div class="panel-head">
+        <span class="panel-label">FINANCE · STEWARDSHIP</span>
+        <span class="panel-meta">SYNCED 07:38</span>
+      </div>
+
+      <div class="networth-label">TOTAL NET WORTH</div>
+      <div class="networth">$1,284,910</div>
+
+      <div class="fin-status">
+        <div class="delta">+$8,240 · +0.65% THIS MONTH</div>
+        <span class="budget-chip ok">ON TRACK</span>
+      </div>
+
+      <svg class="spark spark-sm" viewBox="0 0 320 70" preserveAspectRatio="none" aria-hidden="true">
+        <defs>
+          <linearGradient id="sparkStroke" x1="0" y1="0" x2="1" y2="0">
+            <stop offset="0" style="stop-color: var(--gold); stop-opacity: 0.5"></stop>
+            <stop offset="1" style="stop-color: var(--gold-hi)"></stop>
+          </linearGradient>
+          <linearGradient id="sparkFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" style="stop-color: var(--gold); stop-opacity: 0.16"></stop>
+            <stop offset="1" style="stop-color: var(--gold); stop-opacity: 0"></stop>
+          </linearGradient>
+        </defs>
+        <path fill="url(#sparkFill)" d="M0 52 L22 49 L44 53 L66 44 L88 47 L110 38 L132 42 L154 33 L176 37 L198 27 L220 31 L242 22 L264 26 L286 17 L308 20 L318 13 L318 70 L0 70 Z"></path>
+        <path class="line" stroke="url(#sparkStroke)" d="M0 52 L22 49 L44 53 L66 44 L88 47 L110 38 L132 42 L154 33 L176 37 L198 27 L220 31 L242 22 L264 26 L286 17 L308 20 L318 13"></path>
+        <circle class="enddot" cx="318" cy="13" r="3" fill="var(--good)"></circle>
+      </svg>
+
+      <div class="accounts">
+        <div class="acct">
+          <b>CHECKING</b>
+          <strong>$24,180</strong>
+          <i>OPERATING · LIQUID</i>
+        </div>
+        <div class="acct">
+          <b>SAVINGS</b>
+          <strong>$86,400</strong>
+          <i>6-MONTH RESERVE</i>
+        </div>
+        <div class="acct">
+          <b>INVESTMENTS</b>
+          <strong>$1,174,330</strong>
+          <i class="up">+1.2% TODAY</i>
+        </div>
+      </div>
+
+      <div class="bills">
+        <span class="bills-lbl">UPCOMING BILLS · NEXT 7 DAYS</span>
+        <span class="bills-val"><em>$3,420</em> · 4 DUE</span>
+      </div>
+
+      <div class="ai-note"><span class="sp">✦</span><span>You're <em>on track</em> this month — spending is inside plan and every bill is covered with room to spare. Nothing needs you today.</span></div>
+    </article>
+
+    <!-- PILLAR 2 · PRIORITIES — mission -->
+    <article class="panel p-priorities" style="--d: 0.15s" data-screen-label="Priorities and Reminders">
+      <div class="panel-head">
+        <span class="panel-label">PRIORITIES · MISSION</span>
+        <span class="panel-meta">TODAY + ONGOING</span>
+      </div>
+      <ul class="plist">
+        <li class="prow">
+          <span class="rank">01</span>
+          <span class="pbar high"></span>
+          <div class="task">
+            <span>Finish strategy memo draft</span>
+            <small>DUE TODAY · DEEP WORK</small>
+          </div>
+          <span class="energy hi">HIGH</span>
+        </li>
+        <li class="prow">
+          <span class="rank">02</span>
+          <span class="pbar med"></span>
+          <div class="task">
+            <span>Prepare Q-review agenda</span>
+            <small>TODAY · BEFORE 15:00</small>
+          </div>
+          <span class="energy md">MED</span>
+        </li>
+        <li class="prow">
+          <span class="rank">03</span>
+          <span class="pbar"></span>
+          <div class="task">
+            <span>Ship Q3 product roadmap</span>
+            <small>ONGOING GOAL · 68% DONE</small>
+          </div>
+          <span class="energy md">MED</span>
+        </li>
+        <li class="prow">
+          <span class="rank">04</span>
+          <span class="pbar"></span>
+          <div class="task">
+            <span>Read 12 books this year</span>
+            <small>ONGOING GOAL · 7 / 12</small>
+          </div>
+          <span class="energy lo">LOW</span>
+        </li>
+        <li class="prow">
+          <span class="rank">05</span>
+          <span class="pbar"></span>
+          <div class="task">
+            <span>Reply to M. Reyes re: intro</span>
+            <small>TODAY · LOW PRIORITY</small>
+          </div>
+          <span class="energy lo">LOW</span>
+        </li>
+      </ul>
+      <div class="ai-note"><span class="sp">✦</span><span>Start with <em>01</em> while your energy is high — you have a clear runway until 09:30.</span></div>
+    </article>
+
+    <!-- PILLAR 3 · SCRIPTURE — foundation (illuminated) -->
+    <article class="panel p-verse" style="--d: 0.25s" data-screen-label="Verse to Memorize">
+      <div class="panel-head">
+        <span class="panel-label">SCRIPTURE · FOUNDATION</span>
+        <span class="panel-meta">RECALL TRAINING</span>
+      </div>
+      <div class="verse-ref">PROVERBS 3:5–6</div>
+      <p class="verse-text"><span class="dropcap">T</span>rust in the Lord with all thine heart; and lean not unto thine own understanding. In all thy ways acknowledge him, and he shall direct thy paths.</p>
+      <div class="verse-foot">
+        <div class="recall-row">
+          <span class="recall-big">40%</span>
+          <span class="recall-lbl">COMPLETE · DAY 12 / 30</span>
+        </div>
+        <div class="recall-track"><div class="recall-fill"></div></div>
+        <div class="ai-note"><span class="sp">✦</span><span>I'll cue you to run this once at <em>noon</em>, before lunch.</span></div>
+      </div>
+    </article>
+
+    <!-- SECONDARY · CALENDAR — compact timeline -->
+    <article class="panel p-calendar" style="--d: 0.35s" data-screen-label="Today's Calendar">
+      <div class="panel-head cal-head">
+        <span class="panel-label">TODAY&rsquo;S CALENDAR</span>
+        <span class="panel-meta">5 EVENTS</span>
+      </div>
+      <div class="cal-countdown"><span class="cd-dot"></span>NEXT COMMITMENT IN <em>2H 30M</em> · STANDUP 09:30</div>
+      <div class="cal-rail">
+        <div class="cal-ev now">
+          <div class="cal-node"></div>
+          <div class="cal-time">07:00<span class="now-tag">NOW</span></div>
+          <div class="cal-title">Deep work: strategy memo</div>
+          <div class="cal-meta">90 MIN · PROTECTED</div>
+        </div>
+        <div class="cal-ev">
+          <div class="cal-node"></div>
+          <div class="cal-time">09:30</div>
+          <div class="cal-title">Standup — Product team</div>
+          <div class="cal-meta">VIDEO · 6 ATTENDEES</div>
+        </div>
+        <div class="cal-ev">
+          <div class="cal-node"></div>
+          <div class="cal-time">12:30</div>
+          <div class="cal-title">Lunch w/ M. Reyes</div>
+          <div class="cal-meta">DOWNTOWN · 1 HR</div>
+        </div>
+        <div class="cal-ev">
+          <div class="cal-node"></div>
+          <div class="cal-time">15:00</div>
+          <div class="cal-title">Quarterly review call</div>
+          <div class="cal-meta">VIDEO · INVESTORS</div>
+        </div>
+        <div class="cal-ev">
+          <div class="cal-node"></div>
+          <div class="cal-time">18:30</div>
+          <div class="cal-title">Gym — strength session</div>
+          <div class="cal-meta">PERSONAL · 60 MIN</div>
+        </div>
+      </div>
+    </article>
+
+  </section>
+
+  <!-- standby view for non-dashboard modules -->
+  <section class="standby" id="view-standby" hidden data-screen-label="Module standby">
+    <div class="panel">
+      <div class="standby-dot"></div>
+      <div class="standby-label" id="standbyLabel">MODULE STANDBY</div>
+      <h2 id="standbyName">Productivity</h2>
+      <p class="sub" id="standbySub">Task flow, focus blocks &amp; habit telemetry.</p>
+      <div class="shimmer"></div>
+      <p class="note">C.O.O.P. IS PROVISIONING THIS SURFACE</p>
+    </div>
+  </section>
+
+</main>
+
+<!-- ============ BOTTOM NAV (mobile) ============ -->
+<nav class="bottomnav" aria-label="Modules" data-screen-label="Bottom navigation">
+  <button class="bn-btn active" data-view="dashboard">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><rect x="3.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="3.5" width="7" height="7" rx="2"></rect><rect x="3.5" y="13.5" width="7" height="7" rx="2"></rect><rect x="13.5" y="13.5" width="7" height="7" rx="2"></rect></svg>
+    <span>HOME</span>
+  </button>
+  <button class="bn-btn" data-view="productivity">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="8.5"></circle><polyline points="8.5 12.2 11 14.7 15.5 9.5"></polyline></svg>
+    <span>FOCUS</span>
+  </button>
+  <button class="bn-btn" data-view="finance">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polyline points="3.5 17.5 9 11.5 13 14.5 20.5 6.5"></polyline><polyline points="15.5 6.5 20.5 6.5 20.5 11.5"></polyline></svg>
+    <span>FINANCE</span>
+  </button>
+  <button class="bn-btn" data-view="knowledge">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 5.5 A 2 2 0 0 1 6 3.5 H 20 V 18.5 H 6 A 2 2 0 0 0 4 20.5 Z"></path><line x1="4" y1="20.5" x2="4" y2="5.5"></line><line x1="20" y1="18.5" x2="20" y2="20.5"></line></svg>
+    <span>KNOW</span>
+  </button>
+  <button class="bn-btn" data-view="ai">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"><circle cx="12" cy="12" r="3"></circle><line x1="12" y1="2.5" x2="12" y2="6.5"></line><line x1="12" y1="17.5" x2="12" y2="21.5"></line><line x1="2.5" y1="12" x2="6.5" y2="12"></line><line x1="17.5" y1="12" x2="21.5" y2="12"></line></svg>
+    <span>A.I.</span>
+  </button>
+</nav>
+
+<!-- C.O.O.P. response area — the briefing surfaces here -->
+<div class="coop-toast" id="coopToast" hidden>
+  <b>C.O.O.P. ▸ RESPONSE</b>
+  <p id="toastText"></p>
+</div>
+
+<div id="tweaks-root"></div>
+
+<script src="coop.js"></script>
+<script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
+<script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>
+<script type="text/babel" src="tweaks-panel.jsx"></script>
+<script type="text/babel" src="coop-tweaks.jsx"></script>
+
+</body>
+</html>

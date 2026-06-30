@@ -1,0 +1,467 @@
+@import 'tailwindcss';
+
+/* ============================================================
+   C.O.O.P. — "Midnight & Gilt" design tokens
+   ------------------------------------------------------------
+   SINGLE SOURCE OF TRUTH. Every value from design.md lives here
+   once as a CSS custom property. Tailwind utilities (the
+   @theme inline block below) and every component reference these
+   vars — they never re-declare a value. Change the palette here
+   and it propagates everywhere.
+   ============================================================ */
+:root {
+  /* Color tokens (exact, from design.md) */
+  --bg: #0b0a09;
+  --bg-2: #110d0a;
+  --panel: rgba(26, 23, 18, 0.55);
+  --panel-deep: rgba(18, 15, 11, 0.5);
+  --border: rgba(210, 170, 90, 0.12);
+  --border-hover: rgba(222, 186, 112, 0.3);
+  --text: #f1ebdd;
+  --text-soft: #b6ab96;
+  --text-faint: #7c715c;
+  --gold: #d8a94b;
+  --gold-hi: #f0cd84;
+  --indigo: #5663c9;
+  --good: #5fbf91;
+  --warn: #e0934e;
+  --alert: #d8556b;
+
+  /* Derived glows + global knobs */
+  --glow-gold: color-mix(in srgb, var(--gold) 50%, transparent);
+  --glow-indigo: color-mix(in srgb, var(--indigo) 50%, transparent);
+  --glow-mult: 1;
+  --radius: 20px;
+}
+
+/* ============================================================
+   Tailwind theme mapping — tokens → utilities
+   ------------------------------------------------------------
+   `@theme inline` keeps globals.css the single source of truth:
+   each key POINTS AT the CSS var above (and at the next/font
+   families) rather than re-declaring a value. With `inline`,
+   utilities emit the var directly (e.g. `text-gold` →
+   color: var(--gold)), so there is no second copy of any token.
+   Exposes: bg / bg-2 / panel / panel-deep / border / border-hover
+   / text / text-soft / text-faint / gold / gold-hi / indigo /
+   good / warn / alert, font-sans|mono|serif, and rounded-panel.
+   ============================================================ */
+@theme inline {
+  --color-bg: var(--bg);
+  --color-bg-2: var(--bg-2);
+  --color-panel: var(--panel);
+  --color-panel-deep: var(--panel-deep);
+  --color-border: var(--border);
+  --color-border-hover: var(--border-hover);
+  --color-text: var(--text);
+  --color-text-soft: var(--text-soft);
+  --color-text-faint: var(--text-faint);
+  --color-gold: var(--gold);
+  --color-gold-hi: var(--gold-hi);
+  --color-indigo: var(--indigo);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-alert: var(--alert);
+
+  --font-sans: var(--font-sora);
+  --font-mono: var(--font-mono);
+  --font-serif: var(--font-serif);
+
+  --radius-panel: var(--radius);
+}
+
+/* ============================================================
+   Document base
+   ============================================================ */
+html,
+body {
+  min-height: 100%;
+}
+
+body {
+  background: radial-gradient(1200px 800px at 68% -10%, var(--bg-2), var(--bg) 60%);
+  color: var(--text);
+  font-family: var(--font-sora);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--gold) 30%, transparent);
+  color: var(--text);
+}
+
+/* ============================================================
+   Motion-preference hooks (Sprint 5 fills these in)
+   ------------------------------------------------------------
+   Zustand reflects the `motionEnabled` / `particlesEnabled` UI
+   prefs onto <body> as these classes. The selectors exist NOW so
+   Sprint 5's animations drop in with zero rework. In Sprint 2 they
+   are intentionally inert — nothing here moves.
+   ============================================================ */
+body.no-motion {
+  /* Sprint 5: this is where ambient drift / pulse / rise / shimmer
+     animations get disabled. Static in Sprint 2. */
+}
+
+body.no-particles #particles {
+  display: none;
+}
+
+/* ============================================================
+   Component layer — STATIC gilded-glass surfaces & primitives
+   ------------------------------------------------------------
+   Ported from the locked prototype (design-reference/coop.css),
+   STRIPPED of every transition / animation / @keyframes / particle
+   rule (those are Sprint 5). All colors reference the tokens above,
+   so this remains the single source of truth. Lives in the
+   components layer so Tailwind utility classes can still override.
+   ============================================================ */
+@layer components {
+  /* ---------- Ambient canvas (static; Sprint 5 animates it) ---------- */
+  .ambient {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  .glow {
+    position: absolute;
+    border-radius: 50%;
+    opacity: calc(0.55 * var(--glow-mult));
+  }
+  .glow-a {
+    top: -28vw;
+    left: -18vw;
+    width: 60vw;
+    height: 60vw;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--gold) 14%, transparent),
+      transparent 65%
+    );
+  }
+  .glow-b {
+    top: -24vw;
+    right: -14vw;
+    width: 52vw;
+    height: 52vw;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--gold-hi) 10%, transparent),
+      transparent 65%
+    );
+  }
+  .glow-c {
+    bottom: -34vw;
+    left: 12vw;
+    width: 80vw;
+    height: 50vw;
+    background: radial-gradient(
+      circle,
+      color-mix(in srgb, var(--gold) 9%, transparent),
+      transparent 65%
+    );
+  }
+
+  .gridtex {
+    position: absolute;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(210, 170, 90, 0.045) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(210, 170, 90, 0.045) 1px, transparent 1px);
+    background-size: 56px 56px;
+    -webkit-mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, #000, transparent 75%);
+    mask-image: radial-gradient(ellipse 90% 65% at 50% 0%, #000, transparent 75%);
+  }
+
+  .vignette {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 24%);
+  }
+
+  /* Empty particle container — Sprint 5 spawns the rising field. */
+  #particles {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+    pointer-events: none;
+    overflow: hidden;
+  }
+
+  /* ---------- Gilded glass panel (the shared primitive) ---------- */
+  .panel {
+    position: relative;
+    min-width: 0;
+    max-width: 100%;
+    padding: 28px 30px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--panel);
+    -webkit-backdrop-filter: blur(22px);
+    backdrop-filter: blur(22px);
+    box-shadow:
+      0 18px 44px rgba(0, 0, 0, 0.4),
+      inset 0 1px 0 rgba(255, 240, 210, 0.04);
+  }
+  /* 1px GOLD gradient border via the mask technique (static). */
+  .panel::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    padding: 1px;
+    border-radius: var(--radius);
+    background: linear-gradient(
+      135deg,
+      color-mix(in srgb, var(--gold) 30%, transparent),
+      transparent 38%,
+      transparent 62%,
+      color-mix(in srgb, var(--gold-hi) 22%, transparent)
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: calc(0.7 * var(--glow-mult));
+    pointer-events: none;
+  }
+  /* Hover lifts the border + a low gold halo (static state change). */
+  .panel:hover {
+    border-color: var(--border-hover);
+    box-shadow:
+      0 18px 48px rgba(0, 0, 0, 0.46),
+      0 0 calc(34px * var(--glow-mult)) color-mix(in srgb, var(--gold) 7%, transparent),
+      inset 0 1px 0 rgba(255, 240, 210, 0.055);
+  }
+
+  .panel-head {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+  .panel-label {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+  .panel-meta {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    color: var(--text-faint);
+  }
+
+  /* ---------- Sigil — gold monogram + static ring ---------- */
+  .sigil-wrap {
+    position: relative;
+    display: inline-grid;
+    place-items: center;
+  }
+  .sigil {
+    display: grid;
+    place-items: center;
+    width: 46px;
+    height: 46px;
+    border-radius: 14px;
+    font-family: var(--font-sora);
+    font-size: 20px;
+    font-weight: 500;
+    color: #2a1c06;
+    background: linear-gradient(140deg, var(--gold-hi), var(--gold));
+    box-shadow:
+      0 0 calc(24px * var(--glow-mult)) color-mix(in srgb, var(--gold) 42%, transparent),
+      inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  }
+  .sigil-ring {
+    position: absolute;
+    inset: -6px;
+    border: 1px solid var(--glow-gold);
+    border-radius: 19px;
+    opacity: 0.5;
+    pointer-events: none;
+  }
+
+  /* ---------- Mono caption label ---------- */
+  .coop-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.24em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+  .coop-label.is-soft {
+    color: var(--text-soft);
+  }
+
+  /* ---------- Priority bar (3px vertical) ---------- */
+  .pbar {
+    width: 3px;
+    height: 32px;
+    border-radius: 3px;
+    background: var(--gold);
+    box-shadow: 0 0 calc(8px * var(--glow-mult)) color-mix(in srgb, var(--gold) 45%, transparent);
+  }
+  .pbar.is-med {
+    background: var(--warn);
+    box-shadow: 0 0 calc(8px * var(--glow-mult)) color-mix(in srgb, var(--warn) 45%, transparent);
+  }
+  .pbar.is-high {
+    background: var(--alert);
+    box-shadow: 0 0 calc(8px * var(--glow-mult)) color-mix(in srgb, var(--alert) 45%, transparent);
+  }
+
+  /* ---------- Energy tag (mono pill) ---------- */
+  .energy {
+    display: inline-flex;
+    align-items: center;
+    white-space: nowrap;
+    padding: 5px 11px;
+    border: 1px solid;
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+  }
+  .energy.is-hi {
+    color: var(--good);
+    border-color: color-mix(in srgb, var(--good) 35%, transparent);
+    background: color-mix(in srgb, var(--good) 6%, transparent);
+  }
+  .energy.is-md {
+    color: var(--warn);
+    border-color: color-mix(in srgb, var(--warn) 35%, transparent);
+    background: color-mix(in srgb, var(--warn) 6%, transparent);
+  }
+  .energy.is-lo {
+    color: var(--text-faint);
+    border-color: var(--border);
+    background: var(--panel-deep);
+  }
+
+  /* ---------- Presence / status dot (indigo = C.O.O.P. voice) ---------- */
+  .status-dot {
+    display: inline-block;
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--indigo);
+    box-shadow: 0 0 calc(10px * var(--glow-mult))
+      color-mix(in srgb, var(--indigo) 70%, transparent);
+  }
+
+  /* ---------- AI note (C.O.O.P.'s threaded voice) ---------- */
+  .ai-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-top: 18px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    line-height: 1.55;
+    color: var(--text-soft);
+  }
+  .ai-note .ai-note-glyph {
+    flex-shrink: 0;
+    font-size: 12px;
+    line-height: 1.3;
+    color: var(--indigo);
+    filter: drop-shadow(0 0 calc(6px * var(--glow-mult)) var(--glow-indigo));
+  }
+  .ai-note em {
+    font-style: normal;
+    color: var(--text);
+  }
+
+  /* ---------- Recall meter (verse panel) ---------- */
+  .recall-row {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 8px 14px;
+    margin-bottom: 12px;
+  }
+  .recall-big {
+    font-family: var(--font-sora);
+    font-size: 30px;
+    font-weight: 200;
+    letter-spacing: 0.01em;
+    line-height: 1;
+    background: linear-gradient(150deg, var(--gold-hi), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+  .recall-lbl {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    white-space: nowrap;
+    color: var(--text-faint);
+  }
+  .recall-track {
+    height: 4px;
+    overflow: hidden;
+    border-radius: 99px;
+    background: rgba(210, 170, 90, 0.08);
+  }
+  .recall-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-hi));
+    box-shadow: 0 0 calc(10px * var(--glow-mult)) var(--glow-gold);
+  }
+
+  /* ---------- Scripture (Newsreader) + gold dropcap ---------- */
+  .verse-ref {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    letter-spacing: 0.24em;
+    color: var(--gold);
+  }
+  .verse-text {
+    font-family: var(--font-serif);
+    font-size: clamp(20px, 1.7vw, 27px);
+    font-weight: 300;
+    font-style: italic;
+    line-height: 1.55;
+    color: var(--text);
+    text-wrap: pretty;
+  }
+  .dropcap {
+    float: left;
+    padding: 6px 12px 0 0;
+    font-family: var(--font-serif);
+    font-size: 3.4em;
+    font-style: italic;
+    font-weight: 400;
+    line-height: 0.78;
+    background: linear-gradient(150deg, var(--gold-hi), var(--gold));
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+  }
+}

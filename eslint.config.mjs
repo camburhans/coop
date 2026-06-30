@@ -5,7 +5,16 @@ const eslintConfig = [
   ...nextCoreWebVitals,
   ...nextTypescript,
   {
-    ignores: ['node_modules/**', '.next/**', 'out/**', 'build/**', 'next-env.d.ts'],
+    ignores: [
+      'node_modules/**',
+      '.next/**',
+      'out/**',
+      'build/**',
+      'next-env.d.ts',
+      // Prototype reference material (the locked visual contract we mine, not
+      // application source). Kept in-repo for reference; not linted/built.
+      'design-reference/**',
+    ],
   },
   {
     rules: {
