@@ -34,3 +34,20 @@ inclusion: always
 - Conventional commits: feat:, fix:, chore:, docs:, refactor:
 - One logical change per commit
 - Reference sprint in message: "feat(sprint-1): ..."
+
+## Components & UI (Sprint 2+)
+
+- Server Components by default; "use client" only for interactivity.
+- Styling via Tailwind utilities mapped to the design.md tokens. NEVER
+  hardcode hex colors in components — use the token classes/vars. A color
+  you "need" that isn't a token is a design.md decision, not an inline.
+- Gilded glass uses the shared <Panel> primitive — never re-implement the
+  blur / gold gradient border / shadow per component.
+- Mono (Spline Sans Mono) for ALL metadata, labels, timestamps, tags,
+  status readouts. Sora for UI + display figures. Newsreader (serif,
+  italic) ONLY for scripture/verse text.
+- Indigo is reserved for C.O.O.P.'s "voice": the presence dot, the
+  calendar "now" marker, ai-note annotations, the response toast. Gold is
+  the signature accent for everything else. Don't mix these roles.
+- Empty, loading, and error states are required for any data-backed view.
+- Everything keyboard-reachable; ⌘K and all forms work without a mouse.

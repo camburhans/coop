@@ -57,3 +57,36 @@ coop/
 - No secrets in repo — both .env files gitignored, \*.example documents shape
 - Server-only logic uses 'server-only' import to prevent client leakage
 - Route groups: (auth) bypasses proxy, (app) is protected
+
+## Sprint 2 additions to src/
+
+src/
+├── app/
+│   └── (app)/
+│       ├── layout.tsx           # the command-console shell wrapper
+│       ├── page.tsx             # the dashboard (replaces the S1 placeholder)
+│       ├── productivity/page.tsx        # Projects + Tasks (the real module)
+│       ├── finance/page.tsx             # standby screen until Sprint 3
+│       ├── knowledge/page.tsx           # standby screen until later
+│       └── ai/page.tsx                  # standby screen until Sprint 4
+│   └── api/
+│       ├── projects/route.ts            # list/create
+│       ├── projects/[id]/route.ts       # get/update/delete
+│       ├── tasks/route.ts               # list/create
+│       ├── tasks/[id]/route.ts          # get/update/delete
+│       └── verse/current/route.ts       # get/set current verse
+├── components/
+│   ├── ui/        # Panel, Sigil, Label, PriorityBar, EnergyTag, StatusDot,
+│   │              #   AiNote, RecallMeter…
+│   ├── shell/     # StatusRail, CommandBar, Greeting, LiveClock, PanelGrid,
+│   │              #   BottomNav, Standby, ResponseToast
+│   ├── panels/    # PrioritiesPanel, VersePanel, CalendarPanel,
+│   │              #   FinancePlaceholder
+│   ├── productivity/  # ProjectList, ProjectCard, TaskList, TaskRow, forms
+│   └── command/   # CommandPalette and its items
+├── lib/
+│   ├── productivity/  # services: projects.ts, tasks.ts (server-only)
+│   ├── verse/         # service: verse.ts (server-only)
+│   └── validation/    # zod input schemas
+├── stores/        # zustand (client): command-palette, ui-prefs
+└── styles/        # globals.css (tokens as CSS vars), fonts wiring

@@ -25,9 +25,20 @@ of my life are looking, and keep me organized.
 
 ## V1 sprint plan
 
-- Sprint 1 (current): Foundation — repo, Docker, Postgres+pgvector,
-  full Prisma schema, auth, Tailscale, backups.
-- Sprint 2: Productivity + dashboard shell.
-- Sprint 3: Finance (manual + CSV).
-- Sprint 4: AI layer (embeddings, RAG, semantic search).
-- Sprint 5: Visual polish (glass aesthetic, particle system, transitions).
+- Sprint 1: Foundation — repo, Docker, Postgres+pgvector, full Prisma
+  schema, auth, Tailscale, backups. (COMPLETE — tag sprint-1-complete)
+- Sprint 2 (current): Productivity + dashboard shell. "Midnight & Gilt"
+  design system as code, command-console shell, Projects + Tasks
+  end-to-end, four live/placeholder panels, ⌘K command bar. Static
+  gilded glass only — NO motion (that is Sprint 5).
+- Sprint 3: Finance (manual + CSV) — replaces the Finance placeholder.
+- Sprint 4: AI layer (embeddings, RAG) — powers "Ask C.O.O.P." + ai-notes.
+- Sprint 5: Visual polish — ports the prototype's MOTION layer (ambient
+  gold drift, particle field, breathing pulses, entrance animations,
+  typewriter response). The motion layer lives here and nowhere earlier.
+
+## The three pillars (the system's spine)
+
+Finance = stewardship. Priorities = mission. Scripture = foundation.
+Calendar and system status are secondary. Every design and product
+decision serves surfacing these three at a glance.
