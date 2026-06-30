@@ -2,8 +2,8 @@
 
 **Cognitive Operations & Optimization Platform**
 
-_Version 1.2 — Architecture Specification_
-_Status: Foundation locked, visual direction locked, single-host dev+prod model, pre-Sprint 1_
+*Version 1.3 — Architecture Specification*
+*Status: Foundation built (Sprint 1 complete), design system locked ("Midnight & Gilt"), single-host dev+prod model, pre-Sprint 2*
 
 ---
 
@@ -13,7 +13,7 @@ C.O.O.P. is a private, single-user life operating system: a centralized data eng
 
 It is explicitly **not** a portfolio site, a productivity-app clone, a finance-app clone, or a second-brain clone. It is a unified life-data layer with an intelligent interface wrapped around it.
 
-**North Star:** _Show me what I need to do, show me how the different areas of my life are looking, and keep me organized._
+**North Star:** *Show me what I need to do, show me how the different areas of my life are looking, and keep me organized.*
 
 **Primary user:** One person (the owner). Architected cleanly enough to evolve into a product later, but V1 makes no multi-tenant compromises.
 
@@ -37,21 +37,21 @@ These principles govern every downstream decision. When a tradeoff is unclear, d
 
 The stack is intentionally consolidated. A solo developer working a couple hours most nights, with AI assistance, moves fastest with one application, one deploy, and minimal moving parts.
 
-| Layer              | Choice                                                  | Rationale                                                                             |
-| ------------------ | ------------------------------------------------------- | ------------------------------------------------------------------------------------- |
-| Frontend framework | Next.js + React                                         | Single full-stack framework; server and client in one codebase.                       |
-| Styling            | Tailwind CSS                                            | Fast, consistent, pairs well with a glass/dark design system.                         |
-| Motion             | Framer Motion                                           | Declarative animation; easy to disable globally for principle #2.                     |
-| Backend            | Next.js API routes                                      | One backend, one deploy. No separate FastAPI service in V1.                           |
-| Database           | PostgreSQL (Docker)                                     | Relational integrity for the unified model; JSON columns where flexibility is needed. |
-| ORM                | Prisma                                                  | Type-safe schema, painless migrations — critical for an evolving data model.          |
-| State              | Zustand                                                 | Lightweight client state without Redux overhead.                                      |
-| AI                 | Cheap external API behind a provider-agnostic interface | Sidesteps the 16GB local-LLM ceiling; far better reasoning than a local 7–8B model.   |
-| Embeddings         | External embedding endpoint (same interface)            | Cheap, fast, good enough for semantic search.                                         |
-| Visuals            | CSS glassmorphism + one restrained particle canvas      | The Jarvis feel at ~5% of the cost of WebGL. No Three.js in V1.                       |
-| Containerization   | Docker Compose                                          | Reproducible local deploy on the Mac mini.                                            |
-| Remote access      | Tailscale                                               | Secure phone access without exposing anything to the public internet.                 |
-| App auth           | Single passcode/password                                | Network is private via Tailscale; this protects an unlocked device.                   |
+| Layer | Choice | Rationale |
+|---|---|---|
+| Frontend framework | Next.js + React | Single full-stack framework; server and client in one codebase. |
+| Styling | Tailwind CSS | Fast, consistent, pairs well with a glass/dark design system. |
+| Motion | Framer Motion | Declarative animation; easy to disable globally for principle #2. |
+| Backend | Next.js API routes | One backend, one deploy. No separate FastAPI service in V1. |
+| Database | PostgreSQL (Docker) | Relational integrity for the unified model; JSON columns where flexibility is needed. |
+| ORM | Prisma | Type-safe schema, painless migrations — critical for an evolving data model. |
+| State | Zustand | Lightweight client state without Redux overhead. |
+| AI | Cheap external API behind a provider-agnostic interface | Sidesteps the 16GB local-LLM ceiling; far better reasoning than a local 7–8B model. |
+| Embeddings | External embedding endpoint (same interface) | Cheap, fast, good enough for semantic search. |
+| Visuals | CSS glassmorphism + one restrained particle canvas | The Jarvis feel at ~5% of the cost of WebGL. No Three.js in V1. |
+| Containerization | Docker Compose | Reproducible local deploy on the Mac mini. |
+| Remote access | Tailscale | Secure phone access without exposing anything to the public internet. |
+| App auth | Single passcode/password | Network is private via Tailscale; this protects an unlocked device. |
 
 ### Explicitly deferred (not in V1)
 
@@ -165,7 +165,7 @@ This is the most important and riskiest part of the architecture. Getting the en
 | is_current | boolean | the one shown on the dashboard |
 | created_at / updated_at | timestamptz | |
 
-_Self-contained and minimal by design — the owner's own memorization method will extend this later._
+*Self-contained and minimal by design — the owner's own memorization method will extend this later.*
 
 ### Cross-domain linking
 
@@ -243,23 +243,23 @@ The Mac mini is simultaneously the **development machine** and the **production 
 
 ### Two environments, one machine
 
-Dev and prod run the _same code_ — the separation is achieved by distinct ports, distinct databases, and distinct env files, not distinct images or repos.
+Dev and prod run the *same code* — the separation is achieved by distinct ports, distinct databases, and distinct env files, not distinct images or repos.
 
-|           | Production                                                   | Development                                                        |
-| --------- | ------------------------------------------------------------ | ------------------------------------------------------------------ |
-| Purpose   | The always-on app you open every morning                     | Where you build and experiment                                     |
-| App       | Dockerized, `restart: unless-stopped`, port **3000**         | Native `pnpm dev`, port **3001**                                   |
-| Database  | Postgres in Docker, **internal network only** (no host port) | Postgres in Docker, host port **5433** (for Prisma Studio/tooling) |
-| DB volume | `coop_db_data`                                               | `coop_dev_db_data`                                                 |
-| Env file  | `docker/.env` (never committed)                              | `.env` (never committed)                                           |
-| Data      | Real life data — protected                                   | Fake/throwaway — disposable                                        |
-| Lifecycle | Runs detached, always                                        | Started only while actively coding, then stopped                   |
+| | Production | Development |
+|---|---|---|
+| Purpose | The always-on app you open every morning | Where you build and experiment |
+| App | Dockerized, `restart: unless-stopped`, port **3000** | Native `pnpm dev`, port **3001** |
+| Database | Postgres in Docker, **internal network only** (no host port) | Postgres in Docker, host port **5433** (for Prisma Studio/tooling) |
+| DB volume | `coop_db_data` | `coop_dev_db_data` |
+| Env file | `docker/.env` (never committed) | `.env` (never committed) |
+| Data | Real life data — protected | Fake/throwaway — disposable |
+| Lifecycle | Runs detached, always | Started only while actively coding, then stopped |
 
 **Why two databases is the whole point:** developing against the production database means every schema experiment, test script, or stray `deleteMany()` is played with live ammunition. A separate dev database makes destructive experimentation free. The resource cost is near-zero — an idle Postgres is ~50–150MB RAM and a few MB of disk for fake data; the Postgres image itself is shared, not duplicated.
 
 ### Resource note (16GB ceiling)
 
-Because dev and prod share 16GB of unified memory, the prod stack is kept lean (app + one Postgres, both idle-light). The second, dev Postgres adds only a mostly-idle process. Real memory pressure comes from the dev server + editor + browser during active coding — none of which are duplicated. Avoid running heavy dev _builds_ while relying on prod; otherwise the two coexist comfortably.
+Because dev and prod share 16GB of unified memory, the prod stack is kept lean (app + one Postgres, both idle-light). The second, dev Postgres adds only a mostly-idle process. Real memory pressure comes from the dev server + editor + browser during active coding — none of which are duplicated. Avoid running heavy dev *builds* while relying on prod; otherwise the two coexist comfortably.
 
 ### The promotion boundary
 
@@ -305,84 +305,105 @@ Security in V1 is deliberately simple but real:
 
 Built in Sprint 1, **before** there is data worth losing. Backups target the **production** database only (dev data is disposable). Three independent layers:
 
-1. **Nightly `pg_dump`** of the prod database to a folder synced to iCloud Drive (or Backblaze B2, ~$1/mo). This is the primary safety net — recovery is restoring a single `.sql` file.
-2. **Time Machine** on the Mac mini to an external drive — captures the whole system, not just the database.
-3. **Git** for all code, pushed to a private GitHub repo.
+1. **Nightly `pg_dump`** of the prod database to a folder synced to iCloud Drive (or Backblaze B2, ~$1/mo). This is the primary safety net — recovery is restoring a single `.sql` file. _(Active.)_
+2. **Time Machine** on the Mac mini to an external drive — captures the whole system, not just the database. _(Deferred — see status note below.)_
+3. **Git** for all code, pushed to a private GitHub repo. _(Active.)_
 
 Additionally, an on-demand `pnpm db:snapshot` is run before any migration in either environment — cheap insurance against a bad schema change.
 
-**Recovery objective:** if the Mac mini fails, at most one day of data is lost, and the system is restorable from the dump + repo. No real-time replication in V1 — that is deferred indefinitely as unnecessary complexity for a single user.
+> **Time Machine status — deferred (post–Sprint 1).** As of the Sprint 1
+> baseline, no Time Machine destination is configured: the Mac mini does not yet
+> have a dedicated external drive to back up to. Until one is available, the
+> active safety nets are the nightly `pg_dump` (iCloud-synced, offsite) plus
+> Git. This is an accepted, temporary gap — the database, the only irreplaceable
+> state, is covered by the dumps; Time Machine adds whole-system (OS, config,
+> Docker) recovery, which is convenience rather than data-of-record. When a
+> dedicated external drive is attached (formatted **APFS** per §6 — the 2TB
+> ExFAT media drive must not be used), enable Time Machine, then update this
+> section and `docs/sprint-1-baseline.md`. Tracked as a follow-up carried out of
+> Sprint 1.
+
+**Recovery objective:** if the Mac mini fails, at most one day of **database**
+data is lost, and the system is restorable from the dump + repo. (Whole-system
+restore via Time Machine is added once layer 2 is active.) No real-time
+replication in V1 — that is deferred indefinitely as unnecessary complexity for
+a single user.
 
 ---
 
 ## 9. The Dashboard (Morning Screen)
 
-The dashboard _is_ the product. Everything else is data feeding it. It answers the North Star at a single glance.
+The dashboard *is* the product. Everything else is data feeding it. It answers the North Star at a single glance.
 
 ### Layout skeleton (the command-center frame)
 
-The chosen visual direction is a **command console**, not a page. Three persistent structural elements wrap the content:
+The visual direction is **"Midnight & Gilt" — an illuminated instrument**: a warm, gilded command console (JARVIS by way of an illuminated manuscript), not a page. Three persistent structural elements wrap the content:
 
-- **Left status rail** (fixed, ~84px wide): brand mark, vertical icon navigation (Dashboard, Productivity, Finance, Knowledge, AI Core), and a live system-status cluster at the bottom (connection/"LINK" dot, live clock, "ALL SYSTEMS NOMINAL" readout). Collapses on mobile.
-- **Top command bar** (sticky, ~78px tall): contextual greeting + live date/time on the left; a ⌘K command palette input on the right ("Ask C.O.O.P. anything…") that glows on focus. This palette is the primary input method and the seat of the AI layer.
-- **Panel grid** (12-column): the life telemetry, with the finance panel as the dominant hero element.
+- **Left status rail** (fixed, ~92px wide): a gold sigil monogram + ring, a mono "C.O.O.P." identifier, vertical icon navigation (Dashboard, Productivity, Finance, Knowledge, A.I. Core), and a system-status cluster at the bottom (an indigo presence dot + "READY" readout + live clock). Collapses to a bottom nav on mobile.
+- **Top command bar** (sticky) — *the soul of the interface*: C.O.O.P.'s contextual, spoken greeting + a softer voice clause; a mono status cluster (date · weather · local time · "C.O.O.P. READY"); the ⌘K "Ask C.O.O.P." field (gold ✦ spark, glows on focus); and a row of quick-prompt chips. This bar is the primary input method and the seat of the AI layer — C.O.O.P.'s responses surface in an indigo response toast.
+- **Panel grid** (12-column): the life telemetry, organized around the three pillars.
 
-### Panels, in priority order
+### The three pillars (and the panels)
 
-1. **Contextual greeting** — time-aware (lives in the top bar).
-2. **Financial overview** — hero panel: net worth as the lead figure, a trend sparkline, account balances, recent notable spending.
-3. **Today's calendar** — vertical timeline with a live "now" marker.
-4. **Intelligence briefing** — natural-language AI summary of the day ("the system reports to you"). Wired in Sprint 4; rendered as a static placeholder before then.
-5. **Priorities & reminders** — ranked task list with priority bars and energy tags (low/med/high).
-6. **Verse to memorize** — reference + verse, with a recall/progress indicator (the owner's memorization method extends this later).
+The dashboard is organized around three pillars — **Finance (stewardship)**, **Priorities (mission)**, and **Scripture (foundation)** — with the calendar and system status as secondary. Four panels render on the dashboard:
 
-### Design system (extracted from the locked mockup)
+1. **Priorities · Mission** — the lead panel: a ranked task list with priority bars and energy tags (low/med/high), driven by the shared task ranking. Live from Sprint 2.
+2. **Today's Calendar** — a vertical day timeline with an indigo "now" marker. Reads calendar events from Sprint 2; manual/Google entry is later.
+3. **Finance · Stewardship** — the hero-weight panel: net worth as a gold-gradient lead figure, a trend sparkline, account balances, recent spending, upcoming bills, and an on-track/watch/over budget signal. Real data lands in Sprint 3; a first-class static placeholder before then.
+4. **Scripture · Foundation** — reference + verse set in a serif face with a gilded dropcap, plus a recall/progress indicator (the owner's memorization method extends this later). Live from Sprint 2.
 
-These tokens are the visual contract for Sprint 2 onward. Implement them as Tailwind theme extensions / CSS custom properties; do **not** reinvent per-component.
+The **contextual greeting** lives in the command bar, not the grid. There is **no standalone intelligence-briefing panel** — C.O.O.P.'s natural-language briefing ("the system reports to you") surfaces on demand through the command-bar response toast, wired in Sprint 4. Small indigo `ai-note` annotations thread C.O.O.P.'s voice through the panels (static placeholders until Sprint 4).
+
+> **Layout note (locked):** the dashboard leads with **Priorities** top-left (a 7-wide × 2-tall block) and places the **Finance** hero on the floor row (also 7-wide). Both lead columns are hero-weight, and Finance keeps its hero visual treatment — the large gold-gradient net-worth figure — regardless of row. This Priorities-led arrangement is confirmed and is the locked layout.
+
+### Design system — "Midnight & Gilt" (extracted from the locked prototype)
+
+These tokens are the visual contract for Sprint 2 onward. Implement them once as CSS custom properties + Tailwind theme extensions; do **not** reinvent per-component. The prototype (`coop.css` / `coop.js` / the Command Center HTML) is the reference: Sprint 2 ports its *static* layer; Sprint 5 ports its *motion* layer.
 
 **Color tokens**
 | Token | Value | Role |
 |---|---|---|
-| `bg` | `#080a0f` | Base background |
-| `bg-2` | `#0b0e15` | Secondary background |
-| `panel` | `rgba(20,26,38,0.55)` | Glass panel fill |
-| `panel-edge` | `rgba(140,170,255,0.10)` | Panel border (rest) |
-| `panel-edge-hi` | `rgba(150,180,255,0.28)` | Panel border (focus/hover) |
-| `ink` | `#e7ecf6` | Primary text |
-| `ink-soft` | `#9aa4ba` | Secondary text |
-| `ink-faint` | `#5c667d` | Tertiary/metadata text |
-| `blue` | `#5e8bff` | Primary accent |
-| `violet` | `#9b7bff` | Secondary accent |
-| `teal` | `#5fe0d0` | Tertiary accent |
-| `good` | `#54d6a6` | Positive/status-ok |
-| `warn` | `#e6b15e` | Caution / medium priority |
-| `hi` | `#ff7a8a` | High priority / alert |
+| `bg` | `#0b0a09` | Base background (warm near-black) |
+| `bg-2` | `#110d0a` | Secondary background |
+| `panel` | `rgba(26,23,18,0.55)` | Gilded glass panel fill |
+| `panel-deep` | `rgba(18,15,11,0.50)` | Inset fill (inputs, chips, accounts) |
+| `border` | `rgba(210,170,90,0.12)` | Panel border (rest) |
+| `border-hover` | `rgba(222,186,112,0.30)` | Panel border (focus/hover) |
+| `text` | `#f1ebdd` | Primary text (warm off-white) |
+| `text-soft` | `#b6ab96` | Secondary text |
+| `text-faint` | `#7c715c` | Tertiary/metadata text |
+| `gold` | `#d8a94b` | Signature accent |
+| `gold-hi` | `#f0cd84` | Highlight gold (gradients, glints) |
+| `indigo` | `#5663c9` | C.O.O.P.'s voice — AI/system cue |
+| `good` | `#5fbf91` | Positive / high energy / on-track |
+| `warn` | `#e0934e` | Caution / medium |
+| `alert` | `#d8556b` | High priority / over budget |
+
+The base background is a warm radial gradient; `--glow-gold` / `--glow-indigo` (via `color-mix`) drive accent halos, and a single `--glow-mult` (default 1) scales all glow intensity. Panel radius is 20px.
 
 **Typography**
-
-- **Sora** (200–600 weights) — UI and display. Large figures use ultra-light (200) for the cinematic feel.
-- **Spline Sans Mono** (300–500) — all metadata, labels, timestamps, tags, status readouts. The monospace is what sells the "instrument" character; use it consistently for system text.
+- **Sora** (200–600) — UI and display. Large figures use ultra-light (200) for the cinematic feel; body text sits at 300.
+- **Spline Sans Mono** (300–500) — all metadata, labels, timestamps, tags, status readouts. The monospace sells the "instrument" character.
+- **Newsreader** (italic, 300–500) — reserved for scripture/verse text only, paired with a gold-gradient dropcap.
 
 **Surfaces & effects**
+- Panels: 20px radius, `backdrop-filter: blur(22px)`, warm glass fill, a 1px **gold** gradient border (gold→transparent→gold-hi via mask technique), deep drop shadow + faint warm inset highlight.
+- Accent glows are *low-opacity gold halos* (box-shadow, scaled by `--glow-mult`), never solid neon.
+- Roles by color: gold is the signature accent for everything; **indigo is reserved for C.O.O.P.'s voice** (presence dot, calendar "now" marker, `ai-note` glyph, response toast). Priority bars: gold (base) / warn (med) / alert (high). Energy tags: good (high) / warn (med) / faint (low).
 
-- Panels: ~20px radius, `backdrop-filter: blur(18px)`, layered gradient fill, a 1px gradient border (blue→violet via mask technique), deep drop shadow + subtle inset highlight.
-- Accent glows are _low-opacity halos_ (box-shadow), never solid neon.
-- Status/priority encoded by accent color: `good`/`blue`/`warn`/`hi`.
-
-**Motion (all global-toggle-able, per principle #2)**
-
-- Ambient drifting gradient background (~28s loop).
-- Low-density particle field (~26 particles rising slowly).
-- Faint grid texture with radial mask.
+**Motion (Sprint 5 only — all global-toggle-able, per principle #2)**
+- Ambient drifting gold glow halos (~80–110s loops).
+- Low-density particle field (~26 gold/indigo particles rising slowly).
+- Faint masked gold grid texture + vignette.
 - Panels rise/fade in on load with staggered delay.
-- "Breathing" pulse on live indicators (status dot, current-event node).
+- "Breathing" pulse on live indicators (presence dot, current-event node), a recall-bar fill, and a typewriter reveal on C.O.O.P.'s response.
+- Gated by both `prefers-reduced-motion` and the `no-motion` / `no-particles` body classes (toggled via UI prefs).
 
 **Responsive behavior**
+- ≤1180px: two-up — Priorities/Calendar on the top row, Finance/Scripture on the floor.
+- ≤760px: left rail hidden, replaced by a fixed glass **bottom nav**; panels stack to a single column; the command bar + ⌘K stay accessible and the response toast docks to the bottom.
 
-- ≤1080px: finance panel goes full-width; others drop to 2-up.
-- ≤760px: left rail hidden, replaced by a fixed glass **bottom nav**; panels stack to single column; command bar remains accessible.
-
-**Implementation note:** the mockup is a throwaway reference — its hardcoded data and inline CSS are not reused. Sprint 2 rebuilds these as real Next.js/React components styled with Tailwind, consuming live data. We mine the mockup for the _visual language above_, not its code.
+**Implementation note:** the prototype is a reference, not a codebase to copy — its hardcoded data and mock answers are not reused. Sprint 2 rebuilds these as real Next.js/React components styled with Tailwind, consuming live data, porting the *static* visual language. The prototype's motion (ambient drift, particles, breathing, entrance animations, typewriter) is the reference for Sprint 5, not Sprint 2. The detailed, Kiro-facing version of this contract lives in `.kiro/steering/design.md`.
 
 ---
 
@@ -413,4 +434,4 @@ Recorded so the vision isn't lost while V1 stays tight: Level 3 proactive AI; ri
 
 ---
 
-_End of architecture specification. This is a living document — version it in the repo and revise as sprints reveal reality._
+*End of architecture specification. This is a living document — version it in the repo and revise as sprints reveal reality.*

@@ -16,8 +16,37 @@ if [[ -z "${DATABASE_URL:-}" ]]; then
   exit 1
 fi
 
+# Locate pg_dump. It may be on PATH, or installed keg-only via Homebrew's libpq
+# (not symlinked into the global prefix). Check the common keg locations so the
+# snapshot habit works without a global PATH change.
+PG_DUMP_BIN=""
+for cand in pg_dump \
+  /opt/homebrew/opt/libpq/bin/pg_dump \
+  /usr/local/opt/libpq/bin/pg_dump; do
+  if command -v "$cand" >/dev/null 2>&1; then
+    PG_DUMP_BIN="$cand"
+    break
+  fi
+done
+
+if [[ -z "$PG_DUMP_BIN" ]]; then
+  echo "pg_dump not found on PATH or in the libpq keg." >&2
+  echo "Install the Postgres client tools, e.g.: brew install libpq" >&2
+  echo "(checked PATH, /opt/homebrew/opt/libpq/bin, /usr/local/opt/libpq/bin)" >&2
+  exit 1
+fi
+
 mkdir -p ./snapshots
 TS=$(date +%Y%m%d-%H%M%S)
-echo "snapshotting current DATABASE_URL → ./snapshots/snap-$TS.sql.gz"
-pg_dump "$DATABASE_URL" | gzip > "./snapshots/snap-$TS.sql.gz"
-echo "done: $(du -h ./snapshots/snap-$TS.sql.gz | cut -f1)"
+OUT="./snapshots/snap-$TS.sql.gz"
+echo "snapshotting current DATABASE_URL → $OUT (using $PG_DUMP_BIN)"
+
+# Never leave a partial/empty .sql.gz behind: if the dump fails, remove the
+# half-written file so a broken snapshot can't masquerade as a real backup.
+if ! "$PG_DUMP_BIN" "$DATABASE_URL" | gzip > "$OUT"; then
+  echo "pg_dump failed — removing partial file $OUT" >&2
+  rm -f "$OUT"
+  exit 1
+fi
+
+echo "done: $(du -h "$OUT" | cut -f1)"
