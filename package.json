@@ -17,7 +17,8 @@
     "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build",
     "prod:migrate": "docker compose -f docker/docker-compose.yml --profile migrate run --rm migrate",
     "db:snapshot": "bash scripts/db-snapshot.sh",
-    "db:smoke": "tsx scripts/db-smoke.ts"
+    "db:smoke": "tsx scripts/db-smoke.ts",
+    "prod:smoke": "tsx --conditions=react-server scripts/productivity-smoke.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
@@ -27,6 +28,7 @@
     "next": "16.2.9",
     "react": "19.2.7",
     "react-dom": "19.2.7",
+    "server-only": "^0.0.1",
     "zod": "^4.4.3"
   },
   "devDependencies": {
