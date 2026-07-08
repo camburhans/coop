@@ -1446,3 +1446,732 @@ body.no-particles #particles {
     }
   }
 }
+
+/* ============================================================
+   Productivity module (Sprint 2) — projects + tasks surface
+   ------------------------------------------------------------
+   STATIC gilded glass only. All values reference the design
+   tokens above; nothing here moves (motion is Sprint 5). Lives in
+   the components layer so Tailwind utilities can still override.
+   ============================================================ */
+@layer components {
+
+  /* ---------- Two-panel layout (Projects | Tasks) ---------- */
+  .prod-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 22px;
+    max-width: 1520px;
+    margin: 0 auto;
+    align-items: stretch;
+  }
+
+  .prod-panel {
+    min-width: 0;
+  }
+
+  /* This page's panel heads carry an action button on the right, and a
+     hairline rule under the head to separate it from the list body. */
+  .prod-panel>.panel-head {
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-head-title {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .panel-head-count {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.18em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .panel-head-actions {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+  }
+
+  /* ---------- "New …" button (gold pill) + filter clear ---------- */
+  .new-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 15px;
+    border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
+    border-radius: 99px;
+    background: linear-gradient(140deg,
+        color-mix(in srgb, var(--gold) 18%, transparent),
+        color-mix(in srgb, var(--gold) 7%, transparent));
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gold-hi);
+    cursor: pointer;
+  }
+
+  .new-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .new-btn:hover {
+    border-color: var(--border-hover);
+    background: linear-gradient(140deg,
+        color-mix(in srgb, var(--gold) 26%, transparent),
+        color-mix(in srgb, var(--gold) 12%, transparent));
+    box-shadow: 0 0 calc(22px * var(--glow-mult)) color-mix(in srgb, var(--gold) 16%, transparent);
+  }
+
+  .new-btn:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  .clear-filter {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+    text-decoration: none;
+    white-space: nowrap;
+  }
+
+  .clear-filter:hover {
+    color: var(--gold-hi);
+  }
+
+  /* ---------- Empty state ---------- */
+  .prod-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 24px;
+    border: 1px dashed var(--border);
+    border-radius: 16px;
+    background: color-mix(in srgb, var(--panel-deep) 60%, transparent);
+    text-align: center;
+  }
+
+  .prod-empty::before {
+    content: '';
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--indigo);
+    box-shadow: 0 0 calc(12px * var(--glow-mult)) var(--glow-indigo);
+  }
+
+  .prod-empty span {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /* ---------- Projects list ---------- */
+  .projects-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .project-card {
+    position: relative;
+    display: flex;
+    align-items: flex-start;
+    gap: 14px;
+    padding: 15px 16px 15px 18px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: var(--panel-deep);
+    overflow: hidden;
+  }
+
+  /* Left accent edge — quiet at rest, gold when this project is the filter. */
+  .project-card::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 12px;
+    bottom: 12px;
+    width: 3px;
+    border-radius: 0 3px 3px 0;
+    background: var(--border);
+  }
+
+  .project-card:hover {
+    border-color: var(--border-hover);
+  }
+
+  .project-card.is-selected {
+    border-color: var(--border-hover);
+    background: linear-gradient(140deg,
+        color-mix(in srgb, var(--gold) 9%, transparent),
+        var(--panel-deep) 60%);
+    box-shadow: 0 0 calc(24px * var(--glow-mult)) color-mix(in srgb, var(--gold) 11%, transparent);
+  }
+
+  .project-card.is-selected::before {
+    background: linear-gradient(var(--gold-hi), var(--gold));
+    box-shadow: 0 0 calc(10px * var(--glow-mult)) var(--glow-gold);
+  }
+
+  .pc-link {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 11px;
+    text-decoration: none;
+    color: inherit;
+  }
+
+  .pc-link:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 4px;
+    border-radius: 8px;
+  }
+
+  .pc-top {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    min-width: 0;
+  }
+
+  .pc-top .pbar {
+    height: 20px;
+    flex-shrink: 0;
+  }
+
+  .pc-name {
+    font-family: var(--font-sans);
+    font-size: 15.5px;
+    font-weight: 400;
+    letter-spacing: 0.01em;
+    line-height: 1.3;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .pc-meta {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: 8px 10px;
+  }
+
+  .pc-metaitem {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /* Status pill — colour-coded, mirrors the energy-tag treatment. */
+  .status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    background: var(--panel-deep);
+  }
+
+  .status-pill::before {
+    content: '';
+    width: 5px;
+    height: 5px;
+    border-radius: 50%;
+    background: currentColor;
+    box-shadow: 0 0 calc(7px * var(--glow-mult)) currentColor;
+  }
+
+  .status-pill.is-active {
+    color: var(--good);
+    border-color: color-mix(in srgb, var(--good) 32%, transparent);
+    background: color-mix(in srgb, var(--good) 7%, transparent);
+  }
+
+  .status-pill.is-paused {
+    color: var(--warn);
+    border-color: color-mix(in srgb, var(--warn) 32%, transparent);
+    background: color-mix(in srgb, var(--warn) 7%, transparent);
+  }
+
+  .status-pill.is-done {
+    color: var(--indigo);
+    border-color: color-mix(in srgb, var(--indigo) 34%, transparent);
+    background: color-mix(in srgb, var(--indigo) 8%, transparent);
+  }
+
+  .status-pill.is-archived {
+    color: var(--text-faint);
+  }
+
+  /* ---------- Card action buttons (edit / delete) ---------- */
+  .card-actions {
+    display: flex;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .icon-btn {
+    display: inline-grid;
+    place-items: center;
+    width: 30px;
+    height: 30px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 9px;
+    background: transparent;
+    color: var(--text-faint);
+    cursor: pointer;
+  }
+
+  .icon-btn svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .icon-btn:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+    background: rgba(210, 170, 90, 0.06);
+  }
+
+  .icon-btn:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  .icon-btn.is-danger:hover {
+    border-color: color-mix(in srgb, var(--alert) 45%, transparent);
+    color: var(--alert);
+    background: color-mix(in srgb, var(--alert) 8%, transparent);
+  }
+
+  .icon-btn:disabled {
+    opacity: 0.45;
+    cursor: default;
+  }
+
+  /* ---------- Task list ---------- */
+  .tlist {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .trow {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 14px;
+    padding: 12px 12px 12px 10px;
+    border: 1px solid transparent;
+    border-radius: 13px;
+  }
+
+  .trow:hover {
+    border-color: var(--border);
+    background: rgba(210, 170, 90, 0.045);
+  }
+
+  .trow-rank {
+    width: 20px;
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    text-align: right;
+    color: var(--text-faint);
+  }
+
+  .trow .pbar {
+    height: 30px;
+    flex-shrink: 0;
+  }
+
+  .trow-main {
+    flex: 1 1 220px;
+    min-width: 0;
+  }
+
+  .trow-title {
+    display: block;
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.35;
+    color: var(--text);
+    overflow-wrap: anywhere;
+  }
+
+  .trow-meta {
+    display: block;
+    margin-top: 4px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-faint);
+  }
+
+  /* .trow-main has flex:1, so it already pushes the trailing energy / due /
+     controls group to the right edge — no explicit margin needed. */
+  .trow-due {
+    flex-shrink: 0;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.12em;
+    white-space: nowrap;
+    color: var(--text-soft);
+  }
+
+  .trow-due.is-overdue {
+    color: var(--alert);
+  }
+
+  .trow-due.is-empty {
+    display: none;
+  }
+
+  .trow-controls {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+  }
+
+  .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    border: 1px solid color-mix(in srgb, var(--good) 30%, transparent);
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--good) 7%, transparent);
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    white-space: nowrap;
+    color: var(--good);
+    cursor: pointer;
+  }
+
+  .toggle-btn svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .toggle-btn:hover {
+    border-color: color-mix(in srgb, var(--good) 55%, transparent);
+    background: color-mix(in srgb, var(--good) 13%, transparent);
+  }
+
+  .toggle-btn:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  /* When already done, the toggle becomes a quiet "reopen" affordance. */
+  .toggle-btn.is-done {
+    border-color: var(--border);
+    background: var(--panel-deep);
+    color: var(--text-faint);
+  }
+
+  .toggle-btn.is-done:hover {
+    border-color: var(--border-hover);
+    color: var(--text-soft);
+    background: rgba(210, 170, 90, 0.06);
+  }
+
+  .toggle-btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  /* Completed rows recede: muted, struck through, quieter accents. */
+  .trow.is-done {
+    opacity: 0.55;
+  }
+
+  .trow.is-done .trow-title {
+    text-decoration: line-through;
+    color: var(--text-faint);
+  }
+
+  .trow.is-done .pbar {
+    filter: grayscale(0.5);
+    box-shadow: none;
+  }
+
+  /* ---------- Modal (lightweight overlay; NO animation) ---------- */
+  .modal-backdrop {
+    position: fixed;
+    inset: 0;
+    z-index: 50;
+    display: grid;
+    place-items: start center;
+    padding: 7vh 20px 40px;
+    overflow-y: auto;
+    background: rgba(6, 5, 4, 0.66);
+    -webkit-backdrop-filter: blur(6px);
+    backdrop-filter: blur(6px);
+  }
+
+  .modal-card {
+    width: min(540px, 100%);
+  }
+
+  .modal-card>.panel {
+    padding: 26px 28px 24px;
+  }
+
+  .modal-card .panel-head {
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .modal-close {
+    display: inline-grid;
+    place-items: center;
+    width: 26px;
+    height: 26px;
+    padding: 0;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1;
+    color: var(--text-faint);
+    cursor: pointer;
+  }
+
+  .modal-close:hover {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  .modal-close:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  /* ---------- Forms (project / task) ---------- */
+  .pform {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .field {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    min-width: 0;
+  }
+
+  .field-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  .field-row .field {
+    flex: 1 1 140px;
+  }
+
+  .field-label {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.2em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+  }
+
+  .field-input {
+    width: 100%;
+    padding: 11px 13px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: var(--panel-deep);
+    font-family: var(--font-sans);
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text);
+  }
+
+  select.field-input {
+    appearance: none;
+    -webkit-appearance: none;
+    background-image:
+      linear-gradient(45deg, transparent 50%, var(--text-faint) 50%),
+      linear-gradient(135deg, var(--text-faint) 50%, transparent 50%);
+    background-position:
+      calc(100% - 18px) calc(50% - 2px),
+      calc(100% - 13px) calc(50% - 2px);
+    background-size: 5px 5px, 5px 5px;
+    background-repeat: no-repeat;
+    padding-right: 34px;
+  }
+
+  textarea.field-input {
+    resize: vertical;
+    line-height: 1.5;
+  }
+
+  .field-input::placeholder {
+    color: var(--text-faint);
+  }
+
+  .field-input:focus {
+    outline: none;
+    border-color: var(--border-hover);
+    background: rgba(24, 19, 12, 0.65);
+    box-shadow: 0 0 calc(30px * var(--glow-mult)) color-mix(in srgb, var(--gold) 13%, transparent);
+  }
+
+  /* Native <option> popups render on the OS layer — keep them readable. */
+  .field-input option {
+    background: var(--bg-2);
+    color: var(--text);
+  }
+
+  .field-error {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    font-weight: 400;
+    letter-spacing: 0.08em;
+    color: var(--alert);
+  }
+
+  .form-error {
+    padding: 10px 13px;
+    border: 1px solid color-mix(in srgb, var(--alert) 35%, transparent);
+    border-radius: 10px;
+    background: color-mix(in srgb, var(--alert) 8%, transparent);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    color: var(--alert);
+  }
+
+  .form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 6px;
+    padding-top: 18px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border: 1px solid var(--border);
+    border-radius: 11px;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--text-soft);
+    cursor: pointer;
+  }
+
+  .btn:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: default;
+  }
+
+  .btn-ghost:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    color: var(--text);
+  }
+
+  .btn-primary {
+    border-color: color-mix(in srgb, var(--gold) 36%, transparent);
+    background: linear-gradient(140deg,
+        color-mix(in srgb, var(--gold) 24%, transparent),
+        color-mix(in srgb, var(--gold) 10%, transparent));
+    color: var(--gold-hi);
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    border-color: var(--border-hover);
+    box-shadow: 0 0 calc(24px * var(--glow-mult)) color-mix(in srgb, var(--gold) 18%, transparent);
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1024px) {
+    .prod-layout {
+      grid-template-columns: 1fr;
+      gap: 16px;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .trow {
+      gap: 10px 12px;
+    }
+
+    /* Once wrapped, the trailing group aligns under the title rather than
+       floating far right. */
+    .trow-main {
+      flex-basis: 100%;
+    }
+
+    .trow-due,
+    .trow-controls {
+      margin-left: 30px;
+    }
+  }
+}
