@@ -82,7 +82,9 @@ src/
 │   │              #   BottomNav, Standby, ResponseToast
 │   ├── panels/    # PrioritiesPanel, VersePanel, CalendarPanel,
 │   │              #   FinancePlaceholder
-│   ├── productivity/  # ProjectList, ProjectCard, TaskList, TaskRow, forms
+│   ├── productivity/  # Board (client), ProjectCard, TaskRow, FilterChips,
+│   │              #   ProdModal, project/task forms, Segmented, DeleteButton,
+│   │              #   view.ts (enum→tier projection), format/options/client-api
 │   └── command/   # CommandPalette and its items
 ├── lib/
 │   ├── productivity/  # services: projects.ts, tasks.ts (server-only)
