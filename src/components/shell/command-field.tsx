@@ -1,29 +1,31 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { useState, type KeyboardEvent } from 'react';
+
+import { ASK_STUB, respond } from './respond';
 
 /**
- * CommandField — the ⌘K "Ask C.O.O.P." input.
+ * CommandField — the inline "Ask C.O.O.P." text box in the command bar.
  *
- * Client Component. The field itself is still INERT this session (the real
- * command palette is Session #6 — typing and submitting do nothing yet). The
- * only behaviour wired here is the shortcut the ⌘K hint promises: pressing
- * ⌘K / Ctrl+K focuses the field, which triggers its static gold focus glow.
- * Enter is swallowed so a stray submit can't navigate.
+ * Client Component. A real text field: type a question, press Enter, and
+ * C.O.O.P. answers in the response toast. In Sprint 2 every answer is the
+ * static {@link ASK_STUB} (no reasoning until Sprint 4) — NOTHING here calls or
+ * imports an AI provider.
+ *
+ * Deliberately SEPARATE from the ⌘K command palette: this field is for asking;
+ * ⌘K (wired globally by CommandHotkey) opens the command surface for navigating
+ * and creating. The ⌘K chip is just a discoverability hint for that shortcut.
  */
 export function CommandField() {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const [value, setValue] = useState('');
 
-  useEffect(() => {
-    function onKeyDown(event: KeyboardEvent) {
-      if ((event.metaKey || event.ctrlKey) && event.key.toLowerCase() === 'k') {
-        event.preventDefault();
-        inputRef.current?.focus();
-      }
-    }
-    window.addEventListener('keydown', onKeyDown);
-    return () => window.removeEventListener('keydown', onKeyDown);
-  }, []);
+  function onKeyDown(event: KeyboardEvent<HTMLInputElement>) {
+    if (event.key !== 'Enter') return;
+    event.preventDefault();
+    if (!value.trim()) return;
+    respond(ASK_STUB);
+    setValue('');
+  }
 
   return (
     <div className="cmd-field">
@@ -31,16 +33,15 @@ export function CommandField() {
         ✦
       </span>
       <input
-        ref={inputRef}
         className="cmd-input"
         type="text"
+        value={value}
+        onChange={(event) => setValue(event.target.value)}
+        onKeyDown={onKeyDown}
         placeholder="Speak to C.O.O.P. — say 'catch me up'…"
         aria-label="Ask C.O.O.P."
         autoComplete="off"
         spellCheck={false}
-        onKeyDown={(event) => {
-          if (event.key === 'Enter') event.preventDefault();
-        }}
       />
       <span className="cmd-kbd" aria-hidden>
         ⌘K

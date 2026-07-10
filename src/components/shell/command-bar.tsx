@@ -3,17 +3,7 @@ import { StatusDot } from '@/components/ui/status-dot';
 import { CommandField } from './command-field';
 import { Greeting } from './greeting';
 import { LiveClock } from './live-clock';
-
-/**
- * The visible quick-prompt chips. Visual only in this session — they carry the
- * phrasing the real command palette (Session #6) will wire up.
- */
-const QUICK_PROMPTS = [
-  'Catch me up',
-  'How are my finances?',
-  'What needs my attention?',
-  "What's on today?",
-] as const;
+import { QuickPrompts } from './quick-prompts';
 
 /**
  * CommandBar — "the soul of the interface" (sticky top, blurred warm surface,
@@ -22,11 +12,12 @@ const QUICK_PROMPTS = [
  * Server Component. Three stacked rows:
  *  1. C.O.O.P.'s time-aware Greeting + a mono status cluster (date · weather ·
  *     live local time · indigo "C.O.O.P. READY").
- *  2. The ⌘K "Ask C.O.O.P." field (CommandField) — gold ✦ spark, ⌘K hint
- *     chip, a static gold focus glow. INERT this session: typing/submitting do
- *     nothing (the real palette is Session #6); the only wired behaviour is the
- *     ⌘K / Ctrl+K shortcut, which focuses the field.
- *  3. A row of quick-prompt chips — visual only here (wired in Session #6).
+ *  2. The "Ask C.O.O.P." field (CommandField) — a real text box: type a
+ *     question, press Enter, and the answer lands in the response toast (the
+ *     Sprint-2 stub for now). Separate from ⌘K, which opens the command palette
+ *     (CommandHotkey); the ⌘K chip is just a hint for that shortcut.
+ *  3. A row of quick-prompt chips (QuickPrompts) — each drops the Sprint-2 stub
+ *     answer into the response toast.
  *
  * The only live piece is the LiveClock. The date is the server date at render.
  */
@@ -67,14 +58,7 @@ export function CommandBar() {
 
         <CommandField />
 
-        <div className="cmd-prompts">
-          {QUICK_PROMPTS.map((prompt, index) => (
-            <button key={prompt} type="button" className="qprompt">
-              {index === 0 ? <b aria-hidden>✦</b> : null}
-              {prompt}
-            </button>
-          ))}
-        </div>
+        <QuickPrompts />
       </div>
     </header>
   );

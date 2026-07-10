@@ -1,8 +1,12 @@
 import type { ReactNode } from 'react';
 
+import { CommandPalette } from '@/components/command/command-palette';
 import { Ambient } from '@/components/shell/ambient';
 import { BottomNav } from '@/components/shell/bottom-nav';
 import { CommandBar } from '@/components/shell/command-bar';
+import { CommandHotkey } from '@/components/shell/command-hotkey';
+import { PrefBodyClass } from '@/components/shell/pref-body-class';
+import { ResponseToast } from '@/components/shell/response-toast';
 import { StatusRail } from '@/components/shell/status-rail';
 
 /**
@@ -31,6 +35,12 @@ export default function AppShellLayout({ children }: { children: ReactNode }) {
       <CommandBar />
       <main className="main">{children}</main>
       <BottomNav />
+
+      {/* Client overlays: body-class reflector, ⌘K hotkey, palette, toast. */}
+      <PrefBodyClass />
+      <CommandHotkey />
+      <CommandPalette />
+      <ResponseToast />
     </div>
   );
 }
