@@ -95,3 +95,31 @@ ambient layer divs (no animation), and add NOTHING that moves.
 - ≤760px: rail hidden → fixed glass bottom nav (HOME/FOCUS/FINANCE/KNOW/
   A.I.); panels single column (Priorities, Calendar, Finance, Verse);
   command bar + ⌘K stay accessible; toast docks to the bottom.
+
+## Productivity module (Sprint 2) — source of truth + Option B projection
+The `/productivity` surface is built to `design-reference/productivity.{css,js}`
+— that prototype is the visual + interaction source of truth. Its CSS is ported
+into `src/styles/globals.css` (tokens mapped to --font-* / colour vars, motion
+stripped for Sprint 2). Its layout: equal-width Projects and Tasks columns
+(`.prod-grid` 1fr / 1fr, `align-items: stretch` so both panels share height),
+a client-side project filter-chip row, status-tiered
+project cards with a completion progress bar, priority-accented task rows, a
+C.O.O.P.-voice foot note on the Tasks panel, and segmented-control create/edit
+modals with a two-click inline delete confirm.
+
+Option B (locked): the prototype's leaner model is a VIEW over the full Sprint-1
+Prisma schema — we do NOT migrate the schema down. `src/components/productivity/
+view.ts` holds the single, TOTAL projection:
+- project status → tier: ACTIVE→active (gold), DONE→done (indigo),
+  PAUSED/ARCHIVED→planned (faint).
+- priority → tier: CRITICAL/HIGH→high (alert), MEDIUM→medium (warn), LOW→low (faint).
+- task status → done/open (only DONE is "done").
+Pills/labels show the REAL enum value; only the colour tier is projected, so any
+value the DB holds (CRITICAL, IN_PROGRESS, BLOCKED, PAUSED, ARCHIVED, energy,
+notes, description, project.priority) still renders and round-trips. The modal
+forms surface only the prototype's fields; omitted columns take server defaults
+on create and are preserved (`.partial()` PATCH) on edit. Reintroducing any of
+them later is a UI change, not a migration.
+
+Note: the dashboard Priorities panel is the Command Center surface (coop.css),
+not this module — it keeps its own PriorityBar/EnergyTag treatment.

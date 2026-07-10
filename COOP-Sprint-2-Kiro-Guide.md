@@ -638,9 +638,30 @@ git commit -m "feat(sprint-2): productivity data layer — services, zod validat
 
 ### What You're Building
 
-The real `/productivity` module — replacing its standby screen. Project list with task counts, a task list ranked by the shared `rankTasks()`, create/edit forms with priority/energy/status controls, inline complete/reopen toggles. This is the core "run it daily" surface of Sprint 2, styled in Midnight & Gilt.
+The real `/productivity` module — replacing its standby screen. It is built to
+`design-reference/productivity.{css,js}`, which is the **source of truth** for
+this surface: a Projects column (status-tiered cards with a completion progress
+bar) beside a Tasks column (a client-side project **filter-chip** row, priority-
+accented rows, complete/reopen), plus segmented-control create/edit modals and a
+C.O.O.P.-voice foot note on the Tasks panel. Styled in Midnight & Gilt, static
+(no motion — that is Sprint 5).
 
-> **Pattern (tech.md):** Server Components read via the service layer; client components mutate via the Session #3 Route Handlers, then `router.refresh()`. Zustand only for tiny local UI state (e.g. which row is editing).
+> **Option B — view projection (not a schema change).** The prototype speaks a
+> leaner model than the Sprint-1 database (3 project-status tiers, 3 priority
+> tiers, binary done/open; no energy/notes/description on this surface). We keep
+> the full Prisma schema and render a *reduced projection* over it via
+> `src/components/productivity/view.ts`. That mapping is **total** — every enum
+> value the DB can hold (CRITICAL, IN_PROGRESS, BLOCKED, PAUSED, ARCHIVED, energy,
+> notes…) still renders/round-trips, so nothing is lost and reintroducing a field
+> later needs no migration. Pills show the REAL enum label; only the colour tier
+> is projected. Forms surface the prototype's fields; hidden columns fall to
+> their server defaults on create and are preserved (via `.partial()` PATCH) on
+> edit.
+
+> **Pattern (tech.md):** Server Components read via the service layer; client
+> components mutate via the Session #3 Route Handlers, then `router.refresh()`.
+> The task **filter** and the create/edit **modal** are genuine local client
+> state (held in `board.tsx` via `useState`), never server data.
 
 ### Prompt
 
@@ -654,67 +675,83 @@ Read these files:
 
 ## Task 1: Productivity page (Server Component)
 
-Replace src/app/(app)/productivity/page.tsx (no longer standby): async,
-reads projects (with counts) + top-ranked open tasks via the service layer.
-Two regions inside <Panel>s — Projects and Tasks — responsive (stack on
-mobile). Renders <ProjectList> and <TaskList>.
+src/app/(app)/productivity/page.tsx (no longer standby): async, thin loader.
+Reads ALL projects + ALL ranked tasks via the service layer
+(listProjects/listTasks) and hands them to <ProductivityBoard>. No search
+params — filtering is client-side now. `export const dynamic = 'force-dynamic'`.
 
-## Task 2: Project components (src/components/productivity/)
+## Task 2: View projection (src/components/productivity/view.ts)
 
-- project-list.tsx (server) → <ProjectCard>s.
-- project-card.tsx (server) — name (Sora), status + <PriorityBar>, task
-  count (mono), due date if present (mono). Clicking filters the task list
-  via ?projectId= (server-rendered, no client state).
-- project-form.tsx ("use client") — create/edit: name, description, status,
-  priority, dueDate. POST/PATCH the projects Route Handlers; router.refresh()
-  on success; inline zod errors.
+The single, TOTAL mapping from the rich Prisma enums to the prototype's tiers:
+projectStatusTier (ACTIVE→active / DONE→done / PAUSED,ARCHIVED→planned),
+priorityTier (CRITICAL,HIGH→high / MEDIUM→medium / LOW→low), isTaskDone, and
+tallyTasks (done/total/pct for the progress bar). Pills show the real label;
+only colour is projected.
 
-## Task 3: Task components
+## Task 3: The board (src/components/productivity/board.tsx, "use client")
 
-- task-list.tsx (server) — ranked tasks (optionally ?projectId=), as
-  <TaskRow>s in rank order. Empty state: "Nothing queued. Add a task."
-- task-row.tsx ("use client" for the toggle) — rank number (mono),
-  <PriorityBar>, title (Sora) + meta (mono), <EnergyTag>, due (mono, alert
-  if overdue), a complete/reopen toggle (PATCH /api/tasks/[id] →
-  router.refresh()). Completed rows render muted.
-- task-form.tsx ("use client") — title, project (optional select + "No
-  project"), status, priority, energy, dueDate, notes. Route Handlers;
-  inline errors; router.refresh().
+Owns the two pieces of local client state — the task filter
+(null | projectId | 'none') and the create/edit modal — and derives filtered
+tasks, per-project tallies, chip counts and C.O.O.P.'s foot-note read from the
+loaded data. Renders two <Panel>s (Projects | Tasks) in the `.prod-grid`.
+Guards a filter whose project has been deleted (falls back to "all").
 
-## Task 4: Add buttons + edit/delete
+## Task 4: Projects (project-card.tsx) + filter (filter-chips.tsx)
 
-"New Project" / "New Task" affordances opening the forms (a conditionally
-rendered <Panel> or lightweight modal — NO animation). Edit affordances
-pre-fill. Deletes confirm (window.confirm is fine in V1).
+- project-card.tsx ("use client") — status-tiered left accent, name (Sora),
+  `.pstatus` pill (real label, projected colour), task count, due date, and a
+  completion progress bar (`.proj-prog`). The card body is the filter toggle
+  (keyboard-reachable role="button"); edit/delete live in `.row-actions`.
+- filter-chips.tsx ("use client") — ALL / one-per-project / NO PROJECT, each
+  with a live count; toggles the board's filter (aria-pressed).
 
-## Task 5: Rail wiring
+## Task 5: Tasks (task-row.tsx) + modal forms
+
+- task-row.tsx ("use client") — mono index, priority-tiered `.task-accent`,
+  title (Sora) + meta (project chip coloured by the project's status tier +
+  real status label), priority pill, due (alert if overdue), and a
+  complete/reopen toggle (PATCH → router.refresh()). Done rows render muted.
+- prod-modal.tsx — portal-mounted overlay (`.prod-modal`), static (no fade),
+  closes on scrim/Escape/✕.
+- project-form.tsx / task-form.tsx ("use client") — the prototype's fields via
+  segmented controls (segmented.tsx): project = name / status / due; task =
+  title / linked project / priority / status / due. energy, notes, description
+  and project.priority are NOT on these forms — created rows take server
+  defaults, edits preserve stored values (Option B). Route Handlers; inline zod
+  errors; router.refresh().
+- delete-button.tsx — two-click inline confirm (replaces window.confirm).
+
+## Task 6: Rail wiring
 
 Confirm the rail's FOCUS/Productivity item routes here and shows the active
 gold treatment (it should from Session #2).
 
-## Task 6: Verify (dev) + show me
+## Task 7: Verify (dev) + show me
 
-Create a project (0 count) → tasks with mixed priority/energy, some dated,
-one assigned → confirm order matches rankTasks() → complete a task (mutes,
-drops) → reopen → edit project + task → delete a project and confirm its
-tasks survive with no project. Show task-row.tsx and task-form.tsx.
+Create a project (0 count) → tasks with mixed priority, some dated, one
+assigned → confirm order matches rankTasks() → complete a task (mutes, drops) →
+reopen → filter by project via card + chips → edit project + task → delete a
+project and confirm its tasks survive with no project. Show board.tsx.
 
 Do NOT touch finance, calendar, or verse this session.
 Do NOT add the command palette (Session #6).
 Do NOT introduce Server Actions — mutate via Route Handlers.
-Do NOT add motion; conditional rendering is not animation.
+Do NOT add motion; the prototype's transitions/transform lifts/fade are Sprint 5.
 Do NOT duplicate ranking — import rankTasks() from the task service.
+Do NOT trim the Prisma schema — project the view (view.ts), don't migrate.
 ```
 
 ### What to Verify
 
 - [ ] Create / edit / complete-reopen / delete projects and tasks entirely from the UI
 - [ ] Task order matches the shared `rankTasks()` (e.g. a critical dateless task beats a low task due tomorrow)
-- [ ] Project filter via `?projectId=` works (server-rendered)
+- [ ] Client-side filtering works from both a project card and the filter chips; counts are live
+- [ ] Project cards show a completion progress bar; the Tasks panel shows C.O.O.P.'s foot-note read
 - [ ] Overdue dates show the alert treatment; completed tasks render muted
-- [ ] Empty states show for no projects / no open tasks
+- [ ] Delete uses the two-click inline confirm; empty states show for no projects / no tasks-in-view
 - [ ] Deleting a project leaves its tasks intact with `projectId = null`
-- [ ] `pnpm build` passes; no `framer-motion`; no Server Actions
+- [ ] A CRITICAL / IN_PROGRESS / PAUSED value set via the API still renders (projection is total)
+- [ ] `pnpm build` passes; no `framer-motion`; no Server Actions; no schema migration
 
 Commit:
 ```bash

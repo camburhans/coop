@@ -8,6 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..600&amp;family=Spline+Sans+Mono:wght@300..500&amp;family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="coop.css">
+<link rel="stylesheet" href="productivity.css">
 </head>
 <body>
 
@@ -266,6 +267,31 @@
 
   </section>
 
+  <!-- ============ PRODUCTIVITY (FOCUS) ============ -->
+  <section class="prod" id="view-productivity" hidden data-screen-label="Productivity">
+    <div class="prod-grid">
+
+      <article class="panel prod-projects" style="--d: 0.05s" data-screen-label="Projects">
+        <div class="panel-head">
+          <span class="panel-label">PROJECTS <span class="lbl-dim" id="projCount">0 TOTAL</span></span>
+          <button class="prod-add" id="addProject"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> NEW PROJECT</button>
+        </div>
+        <div class="proj-list" id="projList"></div>
+      </article>
+
+      <article class="panel prod-tasks" style="--d: 0.15s" data-screen-label="Tasks">
+        <div class="panel-head">
+          <span class="panel-label">TASKS <span class="lbl-dim" id="taskCount">0 OPEN</span></span>
+          <button class="prod-add" id="addTask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> NEW TASK</button>
+        </div>
+        <div class="task-filter" id="taskFilter"></div>
+        <div class="task-list" id="taskList"></div>
+        <div class="ai-note" id="taskNote"><span class="sp">✦</span><span></span></div>
+      </article>
+
+    </div>
+  </section>
+
   <!-- standby view for non-dashboard modules -->
   <section class="standby" id="view-standby" hidden data-screen-label="Module standby">
     <div class="panel">
@@ -310,9 +336,26 @@
   <p id="toastText"></p>
 </div>
 
+<!-- ============ PROJECT / TASK MODAL ============ -->
+<div class="prod-modal" id="prodModal" hidden>
+  <div class="prod-modal-scrim" data-close></div>
+  <div class="prod-modal-card" role="dialog" aria-modal="true">
+    <div class="pm-head">
+      <span id="pmTitle">New Project</span>
+      <button class="pm-x" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="pm-body" id="pmBody"></div>
+    <div class="pm-foot">
+      <button class="pm-cancel" data-close>Cancel</button>
+      <button class="pm-save" id="pmSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="tweaks-root"></div>
 
 <script src="coop.js"></script>
+<script src="productivity.js"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>

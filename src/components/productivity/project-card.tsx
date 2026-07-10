@@ -1,63 +1,102 @@
-import Link from 'next/link';
+'use client';
 
-import type { ProjectStatus } from '@prisma/client';
+import { Pencil } from 'lucide-react';
 
-import { PriorityBar } from '@/components/ui/priority-bar';
-import type { ProjectWithTaskCount } from '@/lib/productivity/projects';
+import type { Project } from '@prisma/client';
 
-import { formatDueDate } from './format';
-import { ProjectCardActions } from './project-card-actions';
+import { DeleteButton } from './delete-button';
+import { formatDueDate, isPastDue } from './format';
 import { STATUS_LABEL } from './options';
+import { projectStatusTier, type TaskTally } from './view';
 
 interface ProjectCardProps {
-  project: ProjectWithTaskCount;
-  /** True when this project is the active ?projectId= task filter. */
+  project: Project;
+  /** Completion tally for this project's tasks (drives the progress bar). */
+  tally: TaskTally;
+  /** True when this project is the active task filter. */
   selected: boolean;
+  /** Toggle this project as the task filter. */
+  onSelect: () => void;
+  onEdit: () => void;
+  onDelete: () => void;
 }
 
-/** Map a project status to its coloured status-pill modifier. */
-const STATUS_PILL_CLASS: Record<ProjectStatus, string> = {
-  ACTIVE: 'is-active',
-  PAUSED: 'is-paused',
-  DONE: 'is-done',
-  ARCHIVED: 'is-archived',
-};
-
 /**
- * ProjectCard — one project in the Projects panel.
+ * ProjectCard — one project (`.proj-card`).
  *
- * Server Component. A gold left-edge accent, the name in Sora, a
- * {@link PriorityBar}, a colour-coded status pill, task count and (if set) due
- * date in mono. The card body is a link that filters the task list via
- * `?projectId=`; clicking the already-selected project clears the filter. The
- * edit/delete controls sit outside the link so they don't navigate.
+ * Client Component. A status-tiered left accent (gold=active, indigo=done,
+ * faint=planned), the name, a status pill showing the REAL status label but
+ * coloured by its projected tier, task count, optional due date, and a
+ * completion progress bar. The card itself is the filter toggle (a keyboard-
+ * reachable `role="button"`); edit/delete sit in `.row-actions` and stop
+ * propagation so they never trigger the filter.
  */
-export function ProjectCard({ project, selected }: ProjectCardProps) {
-  const taskCount = project._count.tasks;
-  const href = selected ? '/productivity' : `/productivity?projectId=${project.id}`;
+export function ProjectCard({
+  project,
+  tally,
+  selected,
+  onSelect,
+  onEdit,
+  onDelete,
+}: ProjectCardProps) {
+  const tier = projectStatusTier(project.status);
+  const due = project.dueDate ? formatDueDate(project.dueDate) : null;
+  const overdue = isPastDue(project.dueDate) && tier !== 'done';
+
+  function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
+    // Only the card surface itself toggles — never a keypress on a nested button.
+    if (e.target !== e.currentTarget) return;
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      onSelect();
+    }
+  }
 
   return (
-    <div className={selected ? 'project-card is-selected' : 'project-card'}>
-      <Link href={href} className="pc-link" aria-pressed={selected}>
-        <div className="pc-top">
-          <PriorityBar priority={project.priority} />
-          <span className="pc-name">{project.name}</span>
+    <div
+      className={selected ? 'proj-card sel' : 'proj-card'}
+      data-status={tier}
+      role="button"
+      tabIndex={0}
+      aria-pressed={selected}
+      onClick={onSelect}
+      onKeyDown={onKeyDown}
+    >
+      <div className="proj-title-row">
+        <h3 className="proj-name" title={project.name}>
+          {project.name}
+        </h3>
+        <div className="row-actions">
+          <button
+            type="button"
+            className="icon-btn"
+            onClick={(e) => {
+              e.stopPropagation();
+              onEdit();
+            }}
+            aria-label={`Edit ${project.name}`}
+            title="Edit"
+          >
+            <Pencil aria-hidden strokeWidth={1.6} />
+          </button>
+          <DeleteButton label={project.name} onConfirm={onDelete} />
         </div>
+      </div>
 
-        <div className="pc-meta">
-          <span className={`status-pill ${STATUS_PILL_CLASS[project.status]}`}>
-            {STATUS_LABEL[project.status] ?? project.status}
-          </span>
-          <span className="pc-metaitem">
-            {taskCount} {taskCount === 1 ? 'task' : 'tasks'}
-          </span>
-          {project.dueDate ? (
-            <span className="pc-metaitem">Due {formatDueDate(project.dueDate)}</span>
-          ) : null}
-        </div>
-      </Link>
+      <div className="proj-meta-row">
+        <span className={`pstatus ${tier}`}>{STATUS_LABEL[project.status] ?? project.status}</span>
+        <span className="proj-meta">
+          {tally.total} {tally.total === 1 ? 'TASK' : 'TASKS'}
+        </span>
+        {due ? <span className={overdue ? 'proj-meta overdue' : 'proj-meta'}>· DUE {due}</span> : null}
+      </div>
 
-      <ProjectCardActions project={project} />
+      <div className="proj-prog">
+        <div className="proj-prog-fill" style={{ width: `${tally.pct}%` }} />
+      </div>
+      <span className="proj-prog-lbl">
+        {tally.done} / {tally.total} DONE · {tally.pct}%
+      </span>
     </div>
   );
 }

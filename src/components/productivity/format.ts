@@ -41,6 +41,17 @@ export function isOverdue(date: Date | null, status: TaskStatus): boolean {
   return date.getTime() < todayUtc().getTime();
 }
 
+/**
+ * True when a date falls strictly before today (UTC calendar day). Unlike
+ * {@link isOverdue} this carries no status opinion, so callers that track
+ * completion differently (e.g. projects, whose "done" is a status tier, not a
+ * TaskStatus) can combine it with their own done check.
+ */
+export function isPastDue(date: Date | null): boolean {
+  if (!date) return false;
+  return date.getTime() < todayUtc().getTime();
+}
+
 /** Convert a Date (or null) to a `yyyy-mm-dd` string for an `<input type="date">`. */
 export function toDateInputValue(date: Date | null | undefined): string {
   if (!date) return '';

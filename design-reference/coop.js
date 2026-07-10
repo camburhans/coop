@@ -78,9 +78,12 @@
       b.classList.toggle("active", b.getAttribute("data-view") === v);
     });
     var dash = v === "dashboard";
+    var prod = v === "productivity";
     $("#view-dashboard").hidden = !dash;
-    $("#view-standby").hidden = dash;
-    if (!dash && standbyData[v]) {
+    var pv = $("#view-productivity");
+    if (pv) pv.hidden = !prod;
+    $("#view-standby").hidden = dash || prod;
+    if (!dash && !prod && standbyData[v]) {
       $("#standbyLabel").textContent = standbyData[v][0];
       $("#standbyName").textContent = standbyData[v][1];
       $("#standbySub").textContent = standbyData[v][2];

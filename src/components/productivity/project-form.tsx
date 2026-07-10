@@ -3,11 +3,12 @@
 import { useRouter } from 'next/navigation';
 import { useState, type FormEvent } from 'react';
 
-import type { Project } from '@prisma/client';
+import type { Project, ProjectStatus } from '@prisma/client';
 
 import { submitJson } from './client-api';
 import { toDateInputValue } from './format';
-import { PRIORITY_OPTIONS, PROJECT_STATUS_OPTIONS } from './options';
+import { PROJECT_STATUS_OPTIONS } from './options';
+import { Segmented } from './segmented';
 
 interface ProjectFormProps {
   /** Present → edit (PATCH); absent → create (POST). */
@@ -17,21 +18,20 @@ interface ProjectFormProps {
 }
 
 /**
- * ProjectForm — create/edit a project.
+ * ProjectForm — create/edit a project, in the prototype's modal shape.
  *
- * Client Component. Fields: name, description, status, priority, dueDate.
- * Submits to the project Route Handlers (POST /api/projects or PATCH
- * /api/projects/[id]); on success it `router.refresh()`es the Server-Component
- * tree and closes. Validation errors from the handler render inline per field.
- * No Server Actions — Route Handlers only, per tech.md.
+ * Client Component. Surfaces only the prototype's fields: name, status
+ * (segmented), due date. The richer columns are untouched (Option B): on
+ * CREATE, `priority`/`description` fall to their server defaults; on EDIT the
+ * PATCH omits them, and the `.partial()` update schema leaves the stored values
+ * intact. Submits to the Route Handlers (no Server Actions) and
+ * `router.refresh()`es on success. Handler validation errors render inline.
  */
 export function ProjectForm({ project, onClose }: ProjectFormProps) {
   const router = useRouter();
 
   const [name, setName] = useState(project?.name ?? '');
-  const [description, setDescription] = useState(project?.description ?? '');
-  const [status, setStatus] = useState<string>(project?.status ?? 'ACTIVE');
-  const [priority, setPriority] = useState<string>(project?.priority ?? 'MEDIUM');
+  const [status, setStatus] = useState<ProjectStatus>(project?.status ?? 'ACTIVE');
   const [dueDate, setDueDate] = useState(toDateInputValue(project?.dueDate));
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -44,13 +44,7 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
     setErrors({});
     setFormError(null);
 
-    const body = {
-      name,
-      description: description.trim() ? description.trim() : null,
-      status,
-      priority,
-      dueDate: dueDate ? dueDate : null,
-    };
+    const body = { name, status, dueDate: dueDate ? dueDate : null };
 
     const result = await submitJson(
       project ? `/api/projects/${project.id}` : '/api/projects',
@@ -70,96 +64,49 @@ export function ProjectForm({ project, onClose }: ProjectFormProps) {
   }
 
   return (
-    <form className="pform" onSubmit={handleSubmit} noValidate>
-      <div className="field">
-        <label className="field-label" htmlFor="project-name">
-          Name
-        </label>
-        <input
-          id="project-name"
-          className="field-input"
-          value={name}
-          onChange={(e) => setName(e.target.value)}
-          autoFocus
-          maxLength={120}
-        />
-        {errors.name ? <span className="field-error">{errors.name}</span> : null}
-      </div>
+    <form onSubmit={handleSubmit} noValidate>
+      <label className="pm-label" htmlFor="pm-name">
+        Project name
+      </label>
+      <input
+        id="pm-name"
+        className="pm-input"
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="e.g. Q3 Roadmap"
+        autoFocus
+        maxLength={120}
+      />
+      {errors.name ? <span className="pm-error">{errors.name}</span> : null}
 
-      <div className="field">
-        <label className="field-label" htmlFor="project-description">
-          Description
-        </label>
-        <textarea
-          id="project-description"
-          className="field-input"
-          rows={3}
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-        />
-        {errors.description ? <span className="field-error">{errors.description}</span> : null}
-      </div>
+      <span className="pm-label">Status</span>
+      <Segmented<ProjectStatus>
+        ariaLabel="Project status"
+        options={PROJECT_STATUS_OPTIONS}
+        value={status}
+        onChange={setStatus}
+      />
 
-      <div className="field-row">
-        <div className="field">
-          <label className="field-label" htmlFor="project-status">
-            Status
-          </label>
-          <select
-            id="project-status"
-            className="field-input"
-            value={status}
-            onChange={(e) => setStatus(e.target.value)}
-          >
-            {PROJECT_STATUS_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
+      <label className="pm-label" htmlFor="pm-due">
+        Due date <span className="opt">optional</span>
+      </label>
+      <input
+        id="pm-due"
+        type="date"
+        className="pm-input"
+        value={dueDate}
+        onChange={(e) => setDueDate(e.target.value)}
+      />
+      {errors.dueDate ? <span className="pm-error">{errors.dueDate}</span> : null}
 
-        <div className="field">
-          <label className="field-label" htmlFor="project-priority">
-            Priority
-          </label>
-          <select
-            id="project-priority"
-            className="field-input"
-            value={priority}
-            onChange={(e) => setPriority(e.target.value)}
-          >
-            {PRIORITY_OPTIONS.map((o) => (
-              <option key={o.value} value={o.value}>
-                {o.label}
-              </option>
-            ))}
-          </select>
-        </div>
-      </div>
+      {formError ? <p className="pm-form-error">{formError}</p> : null}
 
-      <div className="field">
-        <label className="field-label" htmlFor="project-due">
-          Due date
-        </label>
-        <input
-          id="project-due"
-          type="date"
-          className="field-input"
-          value={dueDate}
-          onChange={(e) => setDueDate(e.target.value)}
-        />
-        {errors.dueDate ? <span className="field-error">{errors.dueDate}</span> : null}
-      </div>
-
-      {formError ? <p className="form-error">{formError}</p> : null}
-
-      <div className="form-actions">
-        <button type="button" className="btn btn-ghost" onClick={onClose} disabled={submitting}>
+      <div className="pm-foot">
+        <button type="button" className="pm-cancel" onClick={onClose} disabled={submitting}>
           Cancel
         </button>
-        <button type="submit" className="btn btn-primary" disabled={submitting}>
-          {submitting ? 'Saving…' : project ? 'Save changes' : 'Create project'}
+        <button type="submit" className="pm-save" disabled={submitting}>
+          {submitting ? 'Saving…' : project ? 'Save' : 'Create'}
         </button>
       </div>
     </form>
