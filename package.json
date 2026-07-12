@@ -17,6 +17,8 @@
     "prod:rebuild": "docker compose -f docker/docker-compose.yml up -d --build",
     "prod:migrate": "docker compose -f docker/docker-compose.yml --profile migrate run --rm migrate",
     "db:snapshot": "bash scripts/db-snapshot.sh",
+    "db:seed": "tsx scripts/seed-dev.ts",
+    "db:seed:reset": "tsx scripts/seed-dev.ts --reset",
     "db:smoke": "tsx scripts/db-smoke.ts",
     "prod:smoke": "tsx --conditions=react-server scripts/productivity-smoke.ts"
   },

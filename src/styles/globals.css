@@ -1491,6 +1491,37 @@ body.no-particles #particles {
       grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     }
 
+    /* Calendar timeline — the countdown line wraps on phones, so top-align the
+       dot to the first line, relax the tracking, and give wrapped lines room. */
+    .cal-countdown {
+      align-items: flex-start;
+      gap: 8px;
+      padding: 11px 12px;
+      letter-spacing: 0.1em;
+      line-height: 1.6;
+    }
+
+    .cal-countdown .cd-dot {
+      margin-top: 6px;
+    }
+
+    /* Long event titles wrap instead of overflowing the panel. */
+    .cal-title {
+      overflow-wrap: anywhere;
+    }
+
+    /* The NOW tag drops below the time on narrow rows rather than crowding it. */
+    .cal-time {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .now-tag {
+      margin-left: 0;
+    }
+
     .verse-text {
       font-size: 20px;
     }
@@ -2341,6 +2372,35 @@ body.no-particles #particles {
   .pm-cancel:disabled {
     opacity: 0.6;
     cursor: default;
+  }
+
+  /* ---------- Internal scroll (two-column desktop/tablet) ----------
+     When Projects or Tasks grow past the viewport, the board fills the
+     available height and each LIST scrolls inside its own panel — the panel
+     heads, the Add pills, the filter chips and C.O.O.P.'s foot note all stay
+     pinned. Scoped to the two-column layout (>1100px); once the panels stack
+     (≤1100px) the page scrolls naturally, which reads better on a phone than a
+     pair of short inner scroll boxes. */
+  @media (min-width: 1101px) {
+    .prod.prod-grid {
+      height: 100%;
+    }
+
+    .prod .prod-projects,
+    .prod .prod-tasks {
+      min-height: 0;
+      overflow: hidden;
+    }
+
+    .prod .proj-list,
+    .prod .task-list {
+      flex: 1 1 auto;
+      min-height: 0;
+      overflow-y: auto;
+      padding-right: 6px;
+      scrollbar-width: thin;
+      scrollbar-color: rgba(210, 170, 90, 0.16) transparent;
+    }
   }
 
   /* ---------- Responsive ---------- */
