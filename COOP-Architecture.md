@@ -3,7 +3,7 @@
 **Cognitive Operations & Optimization Platform**
 
 *Version 1.3 — Architecture Specification*
-*Status: Foundation built (Sprint 1 complete), design system locked ("Midnight & Gilt"), single-host dev+prod model, pre-Sprint 2*
+*Status: Productivity + dashboard shell live (Sprint 2 complete), design system implemented ("Midnight & Gilt"), single-host dev+prod model, pre-Sprint 3 (Finance)*
 
 ---
 

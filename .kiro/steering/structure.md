@@ -41,7 +41,7 @@ coop/
 ├── .gitignore
 ├── package.json
 ├── tsconfig.json
-├── tailwind.config.ts
+├── postcss.config.mjs # Tailwind v4 via @tailwindcss/postcss (theme lives in globals.css @theme inline — no tailwind.config.ts)
 ├── next.config.ts
 └── README.md
 

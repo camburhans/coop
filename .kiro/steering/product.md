@@ -27,11 +27,12 @@ of my life are looking, and keep me organized.
 
 - Sprint 1: Foundation — repo, Docker, Postgres+pgvector, full Prisma
   schema, auth, Tailscale, backups. (COMPLETE — tag sprint-1-complete)
-- Sprint 2 (current): Productivity + dashboard shell. "Midnight & Gilt"
+- Sprint 2: Productivity + dashboard shell. "Midnight & Gilt"
   design system as code, command-console shell, Projects + Tasks
   end-to-end, four live/placeholder panels, ⌘K command bar. Static
   gilded glass only — NO motion (that is Sprint 5).
-- Sprint 3: Finance (manual + CSV) — replaces the Finance placeholder.
+  (COMPLETE — tag sprint-2-complete; promoted to prod)
+- Sprint 3 (current): Finance (manual + CSV) — replaces the Finance placeholder.
 - Sprint 4: AI layer (embeddings, RAG) — powers "Ask C.O.O.P." + ai-notes.
 - Sprint 5: Visual polish — ports the prototype's MOTION layer (ambient
   gold drift, particle field, breathing pulses, entrance animations,
