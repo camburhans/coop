@@ -58,7 +58,7 @@ The stack is intentionally consolidated. A solo developer working a couple hours
 - **FastAPI / separate backend** — revisit only if Next.js API routes cause real pain.
 - **Three.js / React Three Fiber / WebGL** — V2 polish at the earliest. Hardware (16GB) and daily-use calm both argue against it now.
 - **Local LLMs (Ollama)** — replaced by cheap API. The provider-agnostic interface keeps this reversible.
-- **Plaid / bank integrations** — Sprint 3 ships manual entry + CSV import instead.
+- **Plaid / bank integrations** — Sprint 3 ships manual entry only. CSV import and any bank connector are deferred to a later sprint; both arrive behind a single pluggable import-source interface when they do, so neither is a schema change.
 - **Native iOS** — responsive web over Tailscale covers mobile for V1.
 
 ### Hardware context
@@ -123,7 +123,7 @@ This is the most important and riskiest part of the architecture. Getting the en
 | category | text | manual categorization (free text or controlled list) |
 | description | text | |
 | occurred_on | date | |
-| source | enum | `manual`, `csv_import` — Sprint 3 |
+| source | enum | `manual`, `csv_import`. Sprint 3 is **manual-only**; `csv_import` (and any future connector) lands later behind a pluggable import-source interface — an adapter add, not a schema change. |
 | created_at / updated_at | timestamptz | |
 
 **Note**
@@ -418,7 +418,7 @@ Repo, Docker Compose, PostgreSQL + pgvector, Prisma schema for the full unified 
 Projects and tasks (priority/energy driven). The dashboard shell with real panels wired to real data. Goal: the owner runs actual projects/tasks in it daily.
 
 **Sprint 3 — Finance**
-Accounts, transactions, net worth, manual entry, **and CSV import**. Finance overview panel integrated into the dashboard. Goal: usable for real spending, not a demo.
+Accounts, transactions, and net worth via **manual entry** (balances maintained by hand, including investments — no live price feeds). The module lives at a tabbed `/finance` surface: **Reporting** (read-only telemetry — net worth, cash flow, spend-by-category, account balances, recent transactions) and **Ledger** (account + transaction CRUD) ship live; a **Budgeting** tab is a standby placeholder (targets/envelopes need their own model — a later addition). The dashboard's Finance placeholder panel is replaced with a real panel reading the same service layer. CSV import is deferred to a later sprint (see §3). Reads happen in Server Components via a new `src/lib/finance/` service layer; mutations flow through Route Handlers + `router.refresh()`, with zod-validated input. Goal: usable for real spending, not a demo.
 
 **Sprint 4 — AI Layer**
 Embeddings on existing data, pgvector retrieval, RAG pipeline, semantic search and summaries, cross-module Q&A. Now reasoning over real accumulated data.
@@ -430,7 +430,7 @@ The full glass aesthetic, the particle system, cinematic-but-calm transitions. L
 
 ## 11. Out of Scope for V1 (Tracked for V2+)
 
-Recorded so the vision isn't lost while V1 stays tight: Level 3 proactive AI; rich knowledge system / journals / Bible-study graph; Google Calendar integration; health & fitness layer; digital-presence layer (GitHub/social stats); advanced holographic/WebGL UI; native iOS app; Plaid/bank integrations.
+Recorded so the vision isn't lost while V1 stays tight: Level 3 proactive AI; rich knowledge system / journals / Bible-study graph; Google Calendar integration; health & fitness layer; digital-presence layer (GitHub/social stats); advanced holographic/WebGL UI; native iOS app; Plaid/bank integrations; investment holdings & live price tracking (V1 investment balances are maintained manually). Budgeting (targets/envelopes) is planned but unscheduled — it needs its own data model and gets a standby placeholder in the Finance module until a dedicated sprint picks it up.
 
 ---
 

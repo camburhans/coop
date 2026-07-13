@@ -68,7 +68,6 @@
   /* ---------- view switching ---------- */
   var standbyData = {
     productivity: ["PRODUCTIVITY MODULE", "Productivity", "Task flow, focus blocks & habit telemetry."],
-    finance: ["FINANCE MODULE", "Finance", "Deep portfolio analytics & cash-flow control."],
     knowledge: ["KNOWLEDGE MODULE", "Knowledge", "Memory vault, reading queue & study engine."],
     ai: ["A.I. CORE", "A.I. Core", "Cognition engine, routines & directives."]
   };
@@ -79,11 +78,14 @@
     });
     var dash = v === "dashboard";
     var prod = v === "productivity";
+    var fin = v === "finance";
     $("#view-dashboard").hidden = !dash;
     var pv = $("#view-productivity");
     if (pv) pv.hidden = !prod;
-    $("#view-standby").hidden = dash || prod;
-    if (!dash && !prod && standbyData[v]) {
+    var fv = $("#view-finance");
+    if (fv) fv.hidden = !fin; else fin = false;
+    $("#view-standby").hidden = dash || prod || fin;
+    if (!dash && !prod && !fin && standbyData[v]) {
       $("#standbyLabel").textContent = standbyData[v][0];
       $("#standbyName").textContent = standbyData[v][1];
       $("#standbySub").textContent = standbyData[v][2];

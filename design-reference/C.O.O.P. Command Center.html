@@ -9,6 +9,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Sora:wght@200..600&amp;family=Spline+Sans+Mono:wght@300..500&amp;family=Newsreader:ital,opsz,wght@0,6..72,300..500;1,6..72,300..500&amp;display=swap" rel="stylesheet">
 <link rel="stylesheet" href="coop.css">
 <link rel="stylesheet" href="productivity.css">
+<link rel="stylesheet" href="finance.css">
 </head>
 <body>
 
@@ -292,6 +293,124 @@
     </div>
   </section>
 
+  <!-- ============ FINANCE ============ -->
+  <section class="fin" id="view-finance" hidden data-screen-label="Finance">
+
+    <div class="fin-tabs" role="tablist" aria-label="Finance sections">
+      <button class="fin-tab active" id="ftab-reporting" role="tab" aria-selected="true" aria-controls="fpane-reporting">REPORTING</button>
+      <button class="fin-tab" id="ftab-ledger" role="tab" aria-selected="false" aria-controls="fpane-ledger" tabindex="-1">LEDGER</button>
+      <button class="fin-tab" id="ftab-budgeting" role="tab" aria-selected="false" aria-controls="fpane-budgeting" tabindex="-1">BUDGETING</button>
+    </div>
+
+    <!-- TAB 1 · REPORTING -->
+    <div class="fin-grid" id="fpane-reporting" role="tabpanel" aria-labelledby="ftab-reporting" data-screen-label="Finance · Reporting">
+
+      <article class="panel fin-hero" data-screen-label="Net worth">
+        <div class="panel-head">
+          <span class="panel-label">NET WORTH · TELEMETRY</span>
+          <span class="panel-meta" id="finAsOf">SYNCING…</span>
+        </div>
+        <div class="networth-label">TOTAL NET WORTH</div>
+        <div class="networth" id="finNet">—</div>
+        <div class="fin-status-row">
+          <span class="fin-delta tone-neutral" id="finDelta"></span>
+          <div class="fin-periods" id="finPeriods" role="group" aria-label="Reporting period">
+            <button class="tf-chip active" data-period="month">THIS MONTH</button>
+            <button class="tf-chip" data-period="quarter">QUARTER</button>
+            <button class="tf-chip" data-period="ytd">YTD</button>
+          </div>
+        </div>
+        <svg class="spark fin-spark" viewBox="0 0 320 70" preserveAspectRatio="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="finStroke" x1="0" y1="0" x2="1" y2="0">
+              <stop offset="0" style="stop-color: var(--gold); stop-opacity: 0.5"></stop>
+              <stop offset="1" style="stop-color: var(--gold-hi)"></stop>
+            </linearGradient>
+            <linearGradient id="finFill" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0" style="stop-color: var(--gold); stop-opacity: 0.16"></stop>
+              <stop offset="1" style="stop-color: var(--gold); stop-opacity: 0"></stop>
+            </linearGradient>
+          </defs>
+          <path id="finSparkFill" fill="url(#finFill)" d=""></path>
+          <path id="finSparkLine" class="line" stroke="url(#finStroke)" d=""></path>
+          <circle id="finSparkDot" class="enddot" cx="0" cy="0" r="3" fill="var(--good)"></circle>
+        </svg>
+      </article>
+
+      <article class="panel fin-cash" data-screen-label="Cash flow">
+        <div class="panel-head">
+          <span class="panel-label">CASH FLOW</span>
+          <span class="panel-meta" id="finCashMeta"></span>
+        </div>
+        <div id="finCashBody" class="fin-loading">SYNCING LEDGER…</div>
+      </article>
+
+      <article class="panel fin-acct-report" data-screen-label="Accounts overview">
+        <div class="panel-head">
+          <span class="panel-label">ACCOUNTS · POSITION</span>
+          <span class="panel-meta" id="finAcctMeta"></span>
+        </div>
+        <div id="finAcctReport" class="fin-loading">SYNCING LEDGER…</div>
+      </article>
+
+      <article class="panel fin-cats" data-screen-label="Spend by category">
+        <div class="panel-head">
+          <span class="panel-label">SPEND BY CATEGORY</span>
+          <span class="panel-meta" id="finCatMeta"></span>
+        </div>
+        <div id="finCatList" class="fin-loading">SYNCING LEDGER…</div>
+      </article>
+
+      <article class="panel fin-recent" data-screen-label="Recent transactions">
+        <div class="panel-head">
+          <span class="panel-label">RECENT TRANSACTIONS</span>
+          <span class="panel-meta" id="finRecentMeta"></span>
+        </div>
+        <div id="finRecentList" class="fin-loading">SYNCING LEDGER…</div>
+      </article>
+
+    </div>
+
+    <!-- TAB 2 · LEDGER -->
+    <div class="fin-grid" id="fpane-ledger" role="tabpanel" aria-labelledby="ftab-ledger" data-screen-label="Finance · Ledger" hidden>
+
+      <article class="panel fin-acct-panel" data-screen-label="Accounts ledger">
+        <div class="panel-head">
+          <span class="panel-label">ACCOUNTS <span class="lbl-dim" id="finAcctCount">0</span></span>
+          <button class="prod-add" id="finAddAccount"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> ADD ACCOUNT</button>
+        </div>
+        <div class="fin-warn" id="finWarn" hidden>STORED LEDGER WAS UNREADABLE — DEFAULTS RESTORED</div>
+        <div class="facct-list" id="finAcctList"><div class="fin-loading">SYNCING LEDGER…</div></div>
+      </article>
+
+      <article class="panel fin-tx-panel" data-screen-label="Transactions ledger">
+        <div class="panel-head">
+          <span class="panel-label">TRANSACTIONS <span class="lbl-dim" id="finTxCount">0</span></span>
+          <button class="prod-add" id="finAddTx"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"></line><line x1="5" y1="12" x2="19" y2="12"></line></svg> ADD TRANSACTION</button>
+        </div>
+        <div class="task-filter" id="finTxFilter"></div>
+        <div class="ftx-list" id="finTxList"><div class="fin-loading">SYNCING LEDGER…</div></div>
+        <div class="ai-note" id="finNote"><span class="sp">✦</span><span></span></div>
+      </article>
+
+    </div>
+
+    <!-- TAB 3 · BUDGETING (standby) -->
+    <div id="fpane-budgeting" role="tabpanel" aria-labelledby="ftab-budgeting" data-screen-label="Finance · Budgeting" hidden>
+      <div class="fin-standby">
+        <div class="panel">
+          <div class="standby-dot"></div>
+          <div class="standby-label">MODULE STANDBY</div>
+          <h2>Budgeting</h2>
+          <p class="sub">Targets, envelopes &amp; actual-vs-planned.</p>
+          <div class="shimmer static"></div>
+          <p class="note">C.O.O.P. IS PROVISIONING THIS SURFACE</p>
+        </div>
+      </div>
+    </div>
+
+  </section>
+
   <!-- standby view for non-dashboard modules -->
   <section class="standby" id="view-standby" hidden data-screen-label="Module standby">
     <div class="panel">
@@ -352,10 +471,27 @@
   </div>
 </div>
 
+<!-- ============ FINANCE ACCOUNT / TRANSACTION MODAL ============ -->
+<div class="prod-modal" id="finModal" hidden>
+  <div class="prod-modal-scrim" data-close></div>
+  <div class="prod-modal-card" role="dialog" aria-modal="true">
+    <div class="pm-head">
+      <span id="fmTitle">New Account</span>
+      <button class="pm-x" data-close aria-label="Close">✕</button>
+    </div>
+    <div class="pm-body" id="fmBody"></div>
+    <div class="pm-foot">
+      <button class="pm-cancel" data-close>Cancel</button>
+      <button class="pm-save" id="fmSave">Save</button>
+    </div>
+  </div>
+</div>
+
 <div id="tweaks-root"></div>
 
 <script src="coop.js"></script>
 <script src="productivity.js"></script>
+<script src="finance.js"></script>
 <script src="https://unpkg.com/react@18.3.1/umd/react.development.js" integrity="sha384-hD6/rw4ppMLGNu3tX5cjIb+uRZ7UkRJ6BPkLpg4hAu/6onKUg4lLsHAs9EBPT82L" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/react-dom@18.3.1/umd/react-dom.development.js" integrity="sha384-u6aeetuaXnQ38mYT8rp6sbXaQe3NL9t+IBXmnYxwkUI2Hw4bsp2Wvmx4yRQF1uAm" crossorigin="anonymous"></script>
 <script src="https://unpkg.com/@babel/standalone@7.29.0/babel.min.js" integrity="sha384-m08KidiNqLdpJqLq95G/LEi8Qvjl/xUYll3QILypMoQ65QorJ9Lvtp2RXYGBFj1y" crossorigin="anonymous"></script>

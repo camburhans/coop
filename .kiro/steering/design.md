@@ -123,3 +123,72 @@ them later is a UI change, not a migration.
 
 Note: the dashboard Priorities panel is the Command Center surface (coop.css),
 not this module — it keeps its own PriorityBar/EnergyTag treatment.
+
+## Finance module (Sprint 3) — source of truth + Option B projection
+The `/finance` surface is built to `design-reference/finance.{css,js}` — that
+prototype is the visual + interaction source of truth (it replaces the MODULE
+STANDBY on that route). Its CSS ports into `src/styles/globals.css` (tokens
+mapped to --font-* / colour vars, motion stripped). Its shape:
+- A gilded segmented **tab strip** (`.fin-tabs`) with three tabs — **REPORTING**,
+  **LEDGER**, **BUDGETING**. Keyboard-reachable (arrow/Home/End roving tabindex,
+  aria-selected + aria-controls); one pane visible at a time.
+- **Reporting** (read-only telemetry, 12-col grid): a net-worth hero (span 7)
+  with a period-selector chip row (THIS MONTH / QUARTER / YTD) + a computed
+  sparkline; a cash-flow panel (span 5 — income vs spend bar + net); an
+  assets-vs-liabilities account rollup (span 7) with a NET POSITION line; a
+  spend-by-category bar list (span 5, top 6); and a full-width recent
+  transactions list (span 12).
+- **Ledger** (manual CRUD): an accounts panel (span 5) of add/edit/delete cards
+  and a transactions panel (span 7) with an account filter-chip row, amount-tinted
+  rows (inflow good / outflow alert), a two-click inline delete confirm, a
+  latest-30 cap, and a C.O.O.P.-voice foot note.
+- **Budgeting**: a static MODULE STANDBY panel only (targets/envelopes deferred —
+  they need their own model; a later sprint).
+- Reuses the productivity control primitives verbatim: the gilded "+" add pill,
+  the edit/delete icon buttons, the filter chips, and the segmented-control
+  create/edit modal (Esc closes, Enter saves). Finance colour semantics:
+  good = inflow / on-track, alert = outflow / liability / negative net,
+  warn = caution.
+
+Balances are MANUAL (locked): account balances are maintained by hand and net
+worth is computed from them (assets − liabilities). Transactions are a
+**ledger/record** — they do NOT recompute or drive balances (no double-entry).
+Cash flow, spend-by-category and the sparkline are derived from the transactions
+in the selected period.
+
+Option B (locked): the prototype's model is a VIEW over the Sprint-1 Prisma
+schema — we do NOT migrate the schema down. `src/components/finance/view.ts`
+holds the single, TOTAL projection between the two:
+- **direction**: DB `Transaction.amount` is a single SIGNED Decimal
+  (negative = outflow, per architecture §4). The prototype's `flow: "in"|"out"`
+  + positive amount is a projection — read: `amount < 0 → flow "out"`,
+  magnitude = `abs(amount)`; write: `flow + magnitude → signed Decimal`.
+- **liability**: prototype `liability` ↔ Prisma `Account.isLiability`.
+- **type**: prototype lowercase type ↔ `AccountType` enum (uppercased for the
+  mono tag).
+- **source**: the prototype has none; every create sets `source: MANUAL`
+  (CSV_IMPORT is deferred to a later sprint, behind a pluggable
+  import-source interface — an adapter add, not a schema change).
+- **category**: free-text String, uppercased in the UI; round-trips as-is.
+
+Two points where the app follows the Prisma schema over the prototype (NOT the
+reverse — no migration):
+- **Transactions always belong to an account.** `Transaction.accountId` is
+  REQUIRED; the prototype's "UNLINKED"/orphan state is a prototype-only
+  affordance and is NOT carried into the app. The Add/Edit Transaction form
+  always requires an account.
+- **Account deletion.** The schema is `onDelete: Cascade` (deleting an account
+  deletes its transactions); the prototype orphans them instead. Sprint 3 must
+  choose deliberately — recommended: GUARD deletion of an account that still
+  has transactions (block + confirm) rather than silently cascading real
+  financial records. Resolve in the Sprint 3 spec.
+
+The modal forms surface only the prototype's fields; omitted columns
+(created/updated, source) take service-set values on create and are preserved
+(`.partial()` PATCH) on edit — same discipline as productivity. Reads happen in
+Server Components via `src/lib/finance/`; mutations flow through Route Handlers
++ `router.refresh()`, with zod-validated input in `src/lib/validation/`.
+
+Note: the dashboard Finance panel is the Command Center surface (coop.css) — it
+stays a separate concern from this module and (Sprint 3) is re-pointed at the
+same `src/lib/finance/` service layer this module reads.
