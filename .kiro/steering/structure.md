@@ -92,3 +92,33 @@ src/
 │   └── validation/    # zod input schemas
 ├── stores/        # zustand (client): command-palette, ui-prefs
 └── styles/        # globals.css (tokens as CSS vars), fonts wiring
+
+## Sprint 3 additions to src/
+
+src/
+├── app/
+│   ├── (app)/finance/page.tsx        # REAL tabbed surface (replaces standby)
+│   └── api/
+│       ├── accounts/route.ts             # list/create
+│       ├── accounts/[id]/route.ts        # get/update/delete (delete GUARDED)
+│       ├── transactions/route.ts         # list (?accountId=) / create
+│       └── transactions/[id]/route.ts    # get/update/delete
+├── components/
+│   └── finance/   # FinanceSurface (client tab shell), Tabs, Reporting,
+│       │          #   Ledger, AccountsPanel, AccountCard, AccountForm,
+│       │          #   TransactionsPanel, TxRow, TxForm, TxFilterChips,
+│       │          #   NetWorthHero, PeriodChips, Sparkline, CashFlow,
+│       │          #   SpendByCategory, AcctRollup, RecentTx, BudgetStandby,
+│       │          #   view.ts (signed-amount / liability / type projection),
+│       │          #   format.ts (money/date), options.ts
+├── lib/
+│   ├── finance/   # services (server-only): accounts.ts, transactions.ts,
+│   │              #   reporting.ts (net worth / cash flow / spend / series),
+│   │              #   period.ts (month|quarter|ytd bounds)
+│   └── validation/ # account.ts, transaction.ts (zod)
+└── (scripts/finance-smoke.ts; seed-dev.ts extended with finance)
+
+## Sprint 3 additions to components/panels/
+
+- finance-panel.tsx REPLACES finance-placeholder.tsx on the dashboard —
+  reads src/lib/finance/ (real net worth, sparkline, accounts, spend).

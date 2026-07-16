@@ -67,3 +67,25 @@ inclusion: always
 - Glow intensity: expose a `--glow-mult` CSS var (default 1) that scales
   all accent glows, matching the prototype. A future settings surface can
   tune it; Sprint 2 just defines it.
+
+## Sprint 3 activations / clarifications
+
+- Data access pattern (unchanged — same as Sprint 2, applied to finance):
+  * Reads: Server Components import service functions from
+    src/lib/finance/ directly (accounts, transactions, and the derived
+    net-worth / cash-flow / spend-by-category / sparkline figures).
+  * Mutations: client components POST/PATCH/DELETE to Route Handlers
+    under src/app/api/{accounts,transactions}/, which call the same
+    service layer; then router.refresh(). No Server Actions.
+- Reporting period selection is a URL search param (?period=month|
+  quarter|ytd), read server-side, so all derivations stay in RSC. The
+  tab strip's active tab is client state (useState); it toggles
+  already-server-rendered panes (no per-tab fetch).
+- Validation: zod schemas for accounts + transactions in
+  src/lib/validation/. Signed-amount handling lives in the finance
+  view projection (src/components/finance/view.ts), not scattered.
+- Money: Account.balance and Transaction.amount are Prisma Decimal(14,2).
+  Do arithmetic on Prisma.Decimal (or integer cents) — never coerce to a
+  JS float for sums. Format for display only at the edge.
+- Framer Motion stays DEFERRED to Sprint 5. Add no new runtime deps for
+  finance — reuse the productivity control primitives verbatim.
