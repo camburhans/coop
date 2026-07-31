@@ -2699,3 +2699,691 @@ body.no-particles #particles {
     }
   }
 }
+
+/* ============================================================
+   Finance module (Sprint 3) — reporting · ledger · budgeting
+   ------------------------------------------------------------
+   Ported from design-reference/finance.css (the source of truth)
+   with every raw value mapped to this file's colour tokens and
+   --font-* families. STATIC per Sprint 3: the reference's
+   transitions (tab colour, row border/background, action-icon
+   fade) are intentionally stripped — same discipline as the
+   productivity port. Hover STATE changes still apply, they just
+   apply instantly; the motion layer lands in Sprint 5 (design.md).
+
+   Finance colour semantics (locked): good = inflow / on-track,
+   alert = outflow / liability / negative net, warn = caution.
+
+   Reuses the productivity control primitives rather than
+   re-declaring them: .prod-add (the gilded "+" pill), .icon-btn +
+   .row-actions, .tf-chip / .task-filter (the filter row), the
+   .prod-modal shell, .seg / .seg-btn, and .prod-empty. Only the
+   finance-specific surfaces live here.
+   ============================================================ */
+@layer components {
+
+  /* ---------- Surface frame ---------- */
+  .fin {
+    max-width: 1520px;
+    margin: 0 auto;
+  }
+
+  /* This module's panel heads carry an action pill on the right and a hairline
+     rule — the same treatment the productivity module uses. */
+  .fin .panel-head {
+    align-items: center;
+    margin-bottom: 22px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  /* ---------- Tone utilities ---------- */
+  .fin .tone-good {
+    color: var(--good);
+  }
+
+  .fin .tone-alert {
+    color: var(--alert);
+  }
+
+  .fin .tone-warn {
+    color: var(--warn);
+  }
+
+  .fin .tone-neutral {
+    color: var(--text-faint);
+  }
+
+  /* ---------- Gilded segmented tab strip ---------- */
+  .fin-tabs {
+    display: inline-flex;
+    gap: 5px;
+    padding: 5px;
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    background: var(--panel-deep);
+    -webkit-backdrop-filter: blur(18px);
+    backdrop-filter: blur(18px);
+    margin-bottom: 22px;
+  }
+
+  .fin-tab {
+    font-family: var(--font-mono);
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.18em;
+    color: var(--text-soft);
+    border: 1px solid transparent;
+    background: transparent;
+    border-radius: 99px;
+    padding: 10px 26px;
+    cursor: pointer;
+  }
+
+  .fin-tab:hover {
+    color: var(--text);
+    background: color-mix(in srgb, var(--gold) 6%, transparent);
+  }
+
+  .fin-tab:focus-visible {
+    outline: 1px solid var(--border-hover);
+    outline-offset: 2px;
+  }
+
+  .fin-tab.active {
+    color: var(--gold-hi);
+    border-color: color-mix(in srgb, var(--gold) 40%, transparent);
+    background: color-mix(in srgb, var(--gold) 12%, transparent);
+    box-shadow: 0 0 calc(16px * var(--glow-mult)) color-mix(in srgb, var(--gold) 14%, transparent);
+  }
+
+  /* ---------- Module grid (12-col) ---------- */
+  .fin-grid {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    gap: 22px;
+  }
+
+  /* Reporting spans */
+  .fin-hero {
+    grid-column: span 7;
+  }
+
+  .fin-cash {
+    grid-column: span 5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fin-acct-report {
+    grid-column: span 7;
+  }
+
+  .fin-cats {
+    grid-column: span 5;
+  }
+
+  .fin-recent {
+    grid-column: 1 / -1;
+  }
+
+  /* Ledger spans */
+  .fin-acct-panel {
+    grid-column: span 5;
+    display: flex;
+    flex-direction: column;
+  }
+
+  .fin-tx-panel {
+    grid-column: span 7;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* ---------- Section sublabel (from coop.css; finance is its first consumer) ---------- */
+  .sublabel {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    color: var(--text-faint);
+    margin-bottom: 12px;
+  }
+
+  .fin .sublabel {
+    margin: 4px 0 8px;
+  }
+
+  .fin .sublabel+.sublabel {
+    margin-top: 14px;
+  }
+
+  /* ============================================================
+     REPORTING — net-worth hero
+     ============================================================ */
+  .fin-status-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px 18px;
+    flex-wrap: wrap;
+    margin-top: 8px;
+  }
+
+  .fin-delta {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+
+  .fin-periods {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  /* ---------- Cash flow ---------- */
+  .flow-figs {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin-bottom: 18px;
+  }
+
+  .flow-fig b {
+    display: block;
+    font-family: var(--font-mono);
+    font-weight: 400;
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+    margin-bottom: 8px;
+  }
+
+  .flow-fig strong {
+    display: block;
+    font-size: 26px;
+    font-weight: 200;
+    letter-spacing: 0.01em;
+  }
+
+  .flow-bar {
+    display: flex;
+    height: 6px;
+    border-radius: 99px;
+    overflow: hidden;
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+  }
+
+  .flow-bar .fb-in {
+    background: var(--good);
+    box-shadow: 0 0 calc(8px * var(--glow-mult)) color-mix(in srgb, var(--good) 40%, transparent);
+    min-width: 2px;
+  }
+
+  .flow-bar .fb-out {
+    background: var(--alert);
+    min-width: 2px;
+  }
+
+  .flow-net {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--text-faint);
+  }
+
+  .flow-net em {
+    font-style: normal;
+    font-size: 14px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  .fin-cash .flow-bar {
+    margin-bottom: 18px;
+  }
+
+  /* ---------- Spend by category ---------- */
+  .fcat-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .fcat-row {
+    display: grid;
+    grid-template-columns: minmax(88px, 128px) 1fr auto;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .fcat-name {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-soft);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .fcat-track {
+    height: 9px;
+    border-radius: 99px;
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+    overflow: hidden;
+  }
+
+  .fcat-fill {
+    height: 100%;
+    border-radius: 99px;
+    background: linear-gradient(90deg, var(--gold), var(--gold-hi));
+    box-shadow: 0 0 calc(8px * var(--glow-mult)) var(--glow-gold);
+  }
+
+  .fcat-amt {
+    font-family: var(--font-mono);
+    font-size: 11px;
+    font-weight: 400;
+    color: var(--text-soft);
+    white-space: nowrap;
+  }
+
+  /* ---------- Account rollup (reporting rows) ---------- */
+  .frep-row {
+    display: grid;
+    grid-template-columns: 1fr auto auto;
+    align-items: baseline;
+    gap: 12px;
+    padding: 9px 12px;
+    border-radius: 11px;
+  }
+
+  .frep-row:hover {
+    background: color-mix(in srgb, var(--gold) 4%, transparent);
+  }
+
+  .frep-row .facct-name {
+    font-size: 13.5px;
+    font-weight: 300;
+    color: var(--text);
+  }
+
+  .facct-none {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    color: var(--text-faint);
+    padding: 4px 12px 8px;
+  }
+
+  .facct-net {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: 16px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--text-faint);
+  }
+
+  .facct-net em {
+    font-style: normal;
+    font-size: 15px;
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+
+  /* ============================================================
+     LEDGER — account cards
+     ============================================================ */
+  .facct-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
+  .facct-row {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto auto;
+    align-items: center;
+    gap: 8px 14px;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    background: var(--panel-deep);
+    padding: 13px 14px 13px 16px;
+  }
+
+  .facct-row:hover {
+    border-color: var(--border-hover);
+    background: color-mix(in srgb, var(--gold) 4%, transparent);
+  }
+
+  .facct-main {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    min-width: 0;
+  }
+
+  .facct-main .facct-name {
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .facct-sub {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+
+  /* Mono account-type tag (shows the REAL AccountType enum label). */
+  .facct-type {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    border-radius: 99px;
+    padding: 3px 9px;
+    border: 1px solid var(--border);
+    color: var(--text-faint);
+    background: var(--panel-deep);
+    white-space: nowrap;
+  }
+
+  /* A liability's balance reads in alert — it is money owed. */
+  .facct-bal {
+    font-family: var(--font-mono);
+    font-size: 12.5px;
+    font-weight: 400;
+    color: var(--text);
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .facct-bal.liab {
+    color: var(--alert);
+  }
+
+  .liab-tag {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    border-radius: 99px;
+    padding: 3px 9px;
+    border: 1px solid color-mix(in srgb, var(--alert) 38%, transparent);
+    color: var(--alert);
+    background: color-mix(in srgb, var(--alert) 8%, transparent);
+    white-space: nowrap;
+  }
+
+  .facct-row .row-actions {
+    opacity: 0.5;
+  }
+
+  .facct-row:hover .row-actions,
+  .facct-row:focus-within .row-actions {
+    opacity: 1;
+  }
+
+  /* ============================================================
+     LEDGER — transaction rows
+     ============================================================ */
+  .ftx-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .ftx-row {
+    display: grid;
+    grid-template-columns: 52px minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 12px;
+    padding: 11px 12px;
+    border-radius: 12px;
+    border: 1px solid transparent;
+  }
+
+  .ftx-row.has-actions {
+    grid-template-columns: 52px minmax(0, 1fr) auto auto;
+  }
+
+  .ftx-row:hover {
+    background: color-mix(in srgb, var(--gold) 4%, transparent);
+    border-color: var(--border);
+  }
+
+  .ftx-date {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    color: var(--text-faint);
+    white-space: nowrap;
+  }
+
+  .ftx-body {
+    min-width: 0;
+  }
+
+  .ftx-desc {
+    display: block;
+    font-size: 13.5px;
+    font-weight: 300;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .ftx-meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 5px 8px;
+    margin-top: 5px;
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    color: var(--text-faint);
+  }
+
+  .fcat-chip {
+    font-family: var(--font-mono);
+    font-size: 8.5px;
+    font-weight: 500;
+    letter-spacing: 0.14em;
+    border-radius: 99px;
+    padding: 3px 9px;
+    border: 1px solid color-mix(in srgb, var(--gold) 32%, transparent);
+    color: var(--gold-hi);
+    background: color-mix(in srgb, var(--gold) 8%, transparent);
+    white-space: nowrap;
+  }
+
+  /* Amount tint carries the direction: inflow good, outflow alert. */
+  .ftx-amt {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 400;
+    white-space: nowrap;
+    text-align: right;
+  }
+
+  .ftx-amt.in {
+    color: var(--good);
+  }
+
+  .ftx-amt.out {
+    color: var(--alert);
+  }
+
+  .ftx-row .row-actions {
+    opacity: 0.5;
+  }
+
+  .ftx-row:hover .row-actions,
+  .ftx-row:focus-within .row-actions {
+    opacity: 1;
+  }
+
+  .fin-cap-note {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.16em;
+    color: var(--text-faint);
+    text-align: center;
+    padding: 12px 0 2px;
+  }
+
+  /* C.O.O.P.'s stewardship read, pinned to the foot of the Transactions panel. */
+  .fin-note {
+    margin-top: auto;
+  }
+
+  /* ---------- Data states ---------- */
+  .fin-loading {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.24em;
+    color: var(--text-faint);
+    text-align: center;
+    padding: 34px 0;
+  }
+
+  /* Calm inline caution banner — e.g. a refused (409) account delete. */
+  .fin-warn {
+    font-family: var(--font-mono);
+    font-size: 9px;
+    letter-spacing: 0.14em;
+    line-height: 1.6;
+    color: var(--warn);
+    border: 1px solid color-mix(in srgb, var(--warn) 32%, transparent);
+    background: color-mix(in srgb, var(--warn) 7%, transparent);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+  }
+
+  /* ---------- Modal extensions (inherit the productivity modal) ---------- */
+  .seg.seg-wrap {
+    flex-wrap: wrap;
+  }
+
+  .seg.seg-wrap .seg-btn {
+    flex: 1 0 30%;
+  }
+
+  .pm-input.pm-err {
+    border-color: color-mix(in srgb, var(--alert) 55%, transparent);
+    box-shadow: 0 0 0 1px color-mix(in srgb, var(--alert) 25%, transparent);
+  }
+
+  /* Category is free text but reads as a mono key — uppercase as it is typed. */
+  .pm-input.pm-upper {
+    text-transform: uppercase;
+  }
+
+  /* ---------- Budgeting standby ----------
+     The pane reuses the shared .standby block (shell/standby.tsx); it just
+     sits a little higher inside the tab surface than on a bare module route. */
+  .fin .standby {
+    margin-top: 7vh;
+  }
+
+  /* ---------- Responsive ---------- */
+  @media (max-width: 1180px) {
+    .fin-grid {
+      grid-template-columns: 1fr 1fr;
+      gap: 18px;
+    }
+
+    .fin-hero {
+      grid-column: 1 / -1;
+    }
+
+    .fin-cash,
+    .fin-acct-report,
+    .fin-cats {
+      grid-column: auto;
+    }
+
+    .fin-recent,
+    .fin-acct-panel,
+    .fin-tx-panel {
+      grid-column: 1 / -1;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .fin-grid {
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+
+    .fin-cash,
+    .fin-acct-report,
+    .fin-cats {
+      grid-column: 1 / -1;
+    }
+
+    .fin-tabs {
+      display: flex;
+      width: 100%;
+    }
+
+    .fin-tab {
+      flex: 1;
+      padding: 10px 6px;
+      letter-spacing: 0.12em;
+    }
+
+    .flow-fig strong {
+      font-size: 22px;
+    }
+
+    .fin .standby {
+      margin-top: 4vh;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .ftx-row.has-actions {
+      grid-template-columns: 46px minmax(0, 1fr) auto;
+    }
+
+    .ftx-row.has-actions .row-actions {
+      grid-column: 2 / -1;
+      justify-self: end;
+    }
+
+    .ftx-desc {
+      white-space: normal;
+      overflow-wrap: anywhere;
+    }
+
+    .fcat-row {
+      grid-template-columns: minmax(72px, 96px) 1fr auto;
+    }
+  }
+}

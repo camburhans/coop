@@ -43,8 +43,8 @@ const dbUrl = process.env.DATABASE_URL ?? '';
 if (!(dbUrl.includes('5433') || dbUrl.includes('coop_dev'))) {
   console.error(
     'REFUSING TO RUN: DATABASE_URL does not look like the DEV database.\n' +
-      'It must contain "5433" or "coop_dev". This script mutates data and must\n' +
-      'never touch production.',
+    'It must contain "5433" or "coop_dev". This script mutates data and must\n' +
+    'never touch production.',
   );
   process.exit(1);
 }
@@ -119,7 +119,7 @@ async function main(): Promise<void> {
     accountIds.push(checking.id, card.id);
     console.log(
       `1. Created 2 accounts: ${checking.name} (asset, $${checking.balance.toString()}) ` +
-        `and ${card.name} (liability, $${card.balance.toString()}).\n`,
+      `and ${card.name} (liability, $${card.balance.toString()}).\n`,
     );
 
     // 2. Net worth is computed from BALANCES: assets − liabilities.
@@ -159,7 +159,7 @@ async function main(): Promise<void> {
     txIds.push(payroll.id, grocery.id, utility.id);
     console.log(
       '3. Recorded 3 signed transactions this month on checking: ' +
-        '+5000 SALARY, −200 GROCERIES, −150 UTILITIES.',
+      '+5000 SALARY, −200 GROCERIES, −150 UTILITIES.',
     );
     assert(payroll.source === 'MANUAL', 'created transaction source is MANUAL (never CSV_IMPORT)');
     assert(payroll.category === 'SALARY', 'category was trimmed + uppercased by the schema');
@@ -180,7 +180,7 @@ async function main(): Promise<void> {
     const nw1 = await getNetWorth();
     console.log(
       `5. Balances after recording transactions: checking=$${checkingAfter?.balance.toString()}, ` +
-        `card=$${cardAfter?.balance.toString()}; net worth=${nw1.net}`,
+      `card=$${cardAfter?.balance.toString()}; net worth=${nw1.net}`,
     );
     assertDec(checkingAfter?.balance as Prisma.Decimal, 6000, 'checking balance UNCHANGED (no double-entry)');
     assertDec(cardAfter?.balance as Prisma.Decimal, 1200, 'card balance UNCHANGED (no double-entry)');
@@ -194,12 +194,14 @@ async function main(): Promise<void> {
       cats.map((c) => `${c.category}=${c.amount.toString()}`).join(', '),
     );
     assert(cats.length === 2, 'spend-by-category has 2 categories (inflow SALARY excluded)');
-    assert(cats[0].category === 'GROCERIES', 'largest spend category first: GROCERIES');
-    assertDec(cats[0].amount, 200, 'GROCERIES spend = 200');
-    assert(cats[1].category === 'UTILITIES', 'next spend category: UTILITIES');
-    assertDec(cats[1].amount, 150, 'UTILITIES spend = 150');
+    const [topCat, nextCat] = cats;
+    if (!topCat || !nextCat) throw new Error('spend-by-category returned fewer rows than asserted');
+    assert(topCat.category === 'GROCERIES', 'largest spend category first: GROCERIES');
+    assertDec(topCat.amount, 200, 'GROCERIES spend = 200');
+    assert(nextCat.category === 'UTILITIES', 'next spend category: UTILITIES');
+    assertDec(nextCat.amount, 150, 'UTILITIES spend = 150');
     assert(
-      cats[0].amount.greaterThanOrEqualTo(cats[1].amount),
+      topCat.amount.greaterThanOrEqualTo(nextCat.amount),
       'categories are sorted descending by amount',
     );
     console.log('');
@@ -209,12 +211,14 @@ async function main(): Promise<void> {
     const series = await getNetWorthSeries('month');
     console.log(
       `6b. getNetWorthSeries('month'): first=${series.first}, last=${series.last}, ` +
-        `periodNet=${series.periodNet}, points=[${series.points.map((p) => p.toString()).join(', ')}]`,
+      `periodNet=${series.periodNet}, points=[${series.points.map((p) => p.toString()).join(', ')}]`,
     );
     assertDec(series.periodNet, 4650, 'series periodNet = 4650 (matches cash-flow net)');
     assertDec(series.last, 4800, 'series LAST point = current net worth (4800)');
     assertDec(series.first, 150, 'series FIRST point = net − periodNet (4800 − 4650)');
-    assertDec(series.points[series.points.length - 1], 4800, 'last plotted point equals net worth');
+    const lastPoint = series.points[series.points.length - 1];
+    if (!lastPoint) throw new Error('net-worth series returned no points');
+    assertDec(lastPoint, 4800, 'last plotted point equals net worth');
     console.log('');
 
     // 6c. Recent transactions across all accounts.

@@ -11,6 +11,11 @@ interface SegmentedProps<T extends string> {
   options: readonly SegmentedOption<T>[];
   value: T;
   onChange: (value: T) => void;
+  /**
+   * Let the pills wrap onto multiple rows (`.seg-wrap`). For groups too wide for
+   * one line — the finance account-type control has seven options.
+   */
+  wrap?: boolean;
 }
 
 /**
@@ -26,6 +31,7 @@ export function Segmented<T extends string>({
   options,
   value,
   onChange,
+  wrap,
 }: SegmentedProps<T>) {
   function onKeyDown(e: React.KeyboardEvent<HTMLDivElement>) {
     if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
@@ -38,7 +44,12 @@ export function Segmented<T extends string>({
   }
 
   return (
-    <div className="seg" role="radiogroup" aria-label={ariaLabel} onKeyDown={onKeyDown}>
+    <div
+      className={wrap ? 'seg seg-wrap' : 'seg'}
+      role="radiogroup"
+      aria-label={ariaLabel}
+      onKeyDown={onKeyDown}
+    >
       {options.map((o) => {
         const active = o.value === value;
         return (
