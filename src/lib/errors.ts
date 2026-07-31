@@ -24,3 +24,19 @@ export class BadRequestError extends Error {
     this.name = 'BadRequestError';
   }
 }
+
+/**
+ * The request conflicts with the current state of a resource, so it is refused
+ * rather than applied. Maps to HTTP 409.
+ *
+ * Sprint 3's account-delete guard throws this: deleting an account that still
+ * has transactions is blocked (the schema would cascade-delete real financial
+ * records, which we never do silently). The caller must remove or reassign the
+ * transactions first.
+ */
+export class ConflictError extends Error {
+  constructor(message = 'Conflict') {
+    super(message);
+    this.name = 'ConflictError';
+  }
+}

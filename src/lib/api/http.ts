@@ -1,7 +1,7 @@
 import { NextResponse } from 'next/server';
 import { z, ZodError } from 'zod';
 
-import { BadRequestError, NotFoundError } from '@/lib/errors';
+import { BadRequestError, ConflictError, NotFoundError } from '@/lib/errors';
 
 const idSchema = z.uuid();
 
@@ -25,6 +25,7 @@ export function parseId(id: string): string {
  * - ZodError                    → 400 with field-level issues
  * - BadRequestError             → 400
  * - NotFoundError               → 404
+ * - ConflictError               → 409
  * - SyntaxError (bad JSON body) → 400
  * - anything else               → 500 (logged)
  */
@@ -48,6 +49,10 @@ export function errorResponse(err: unknown): NextResponse {
 
   if (err instanceof NotFoundError) {
     return NextResponse.json({ error: err.message }, { status: 404 });
+  }
+
+  if (err instanceof ConflictError) {
+    return NextResponse.json({ error: err.message }, { status: 409 });
   }
 
   if (err instanceof SyntaxError) {

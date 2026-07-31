@@ -20,7 +20,8 @@
     "db:seed": "tsx scripts/seed-dev.ts",
     "db:seed:reset": "tsx scripts/seed-dev.ts --reset",
     "db:smoke": "tsx scripts/db-smoke.ts",
-    "prod:smoke": "tsx --conditions=react-server scripts/productivity-smoke.ts"
+    "prod:smoke": "tsx --conditions=react-server scripts/productivity-smoke.ts",
+    "finance:smoke": "tsx --conditions=react-server scripts/finance-smoke.ts"
   },
   "dependencies": {
     "@prisma/client": "^6.19.3",
