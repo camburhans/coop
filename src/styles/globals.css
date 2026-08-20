@@ -937,6 +937,21 @@ body.no-particles #particles {
     filter: drop-shadow(0 0 calc(5px * var(--glow-mult)) var(--glow-gold));
   }
 
+  /*
+   * End-of-series dot. Its colour carries the period's direction (good = the
+   * period gained, alert = it lost), so the tint lives here rather than as an
+   * inline fill. STATIC — the prototype's `breathe` pulse is Sprint 5.
+   */
+  .spark .enddot {
+    fill: var(--good);
+    filter: drop-shadow(0 0 calc(6px * var(--glow-mult)) color-mix(in srgb, var(--good) 70%, transparent));
+  }
+
+  .spark .enddot.is-alert {
+    fill: var(--alert);
+    filter: drop-shadow(0 0 calc(6px * var(--glow-mult)) color-mix(in srgb, var(--alert) 70%, transparent));
+  }
+
   .accounts {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));

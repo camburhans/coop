@@ -11,8 +11,12 @@ const TABS: readonly { id: TabId; label: string }[] = [
   { id: 'budgeting', label: 'BUDGETING' },
 ];
 
-/** Ledger leads until the Reporting pane's figures land (next session). */
-const DEFAULT_TAB: TabId = 'ledger';
+/**
+ * Reporting leads: the daily question is "how are we doing?", and answering it
+ * without a click is the point of the surface. Recording entries is the
+ * deliberate act, one tab away.
+ */
+const DEFAULT_TAB: TabId = 'reporting';
 
 interface FinanceSurfaceProps {
   /** Server-rendered panes, handed in as props. */

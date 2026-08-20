@@ -41,8 +41,14 @@ function decimalString(value: MoneyLike): string {
 /**
  * True when a money value is negative. String-based on purpose: a decimal
  * string's sign is unambiguous, and `-0.00` is not an outflow.
+ *
+ * Exported because the sign of a figure is a PROJECTION decision, and this is
+ * where those live: the reporting panels ask it whether a net worth, a period
+ * net or a net position reads good or alert, so the "is this money negative?"
+ * rule has exactly one definition (the same one `toFlow` uses) instead of a
+ * `Number(x) < 0` scattered through the components.
  */
-function isNegative(value: MoneyLike): boolean {
+export function isNegativeMoney(value: MoneyLike): boolean {
   const raw = decimalString(value);
   return raw.startsWith('-') && /[1-9]/.test(raw);
 }
@@ -53,7 +59,7 @@ function isNegative(value: MoneyLike): boolean {
  * read as an inflow.
  */
 export function toFlow(amount: MoneyLike): Flow {
-  return isNegative(amount) ? 'out' : 'in';
+  return isNegativeMoney(amount) ? 'out' : 'in';
 }
 
 /** The unsigned magnitude of a signed amount, as an exact decimal string. */
